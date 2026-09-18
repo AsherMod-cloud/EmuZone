@@ -1,5 +1,44 @@
 # Changelog
 
+## 2026-09-18
+
+### Added
+
+- Added roadmap export system with three output formats:
+  - **📄 Export as .js** — generate blueprint `DEFAULT_ROADMAP` (id, category, title only, tanpa status) siap paste ke `roadmap.js`.
+  - **💾 Download JSON** — snapshot lengkap dengan status & timestamp, cocok buat backup.
+  - **📝 Export as .md** — tabel Markdown dengan status symbol (✅/🟡/⬜/❌/⛔), cocok buat changelog / docs.
+- Added preview modal untuk format `.js` dan `.md` dengan tombol **📋 Copy** dan **💾 Download**.
+- Added `preview-info` counter yang menampilkan total baris dan jumlah karakter.
+- Added `Select All` behavior via native long-press di preview content (dengan `user-select: text` scoped).
+
+### Changed
+
+- **Roadmap arsitektur dipisah jadi dua sumber:**
+  - `roadmap.js` → **blueprint** (id, category, title). Semua item di-seed dengan `status: "planned"`.
+  - Firestore → **single source of truth** untuk status live.
+- `DEFAULT_ROADMAP` sekarang **tanpa field `status`** — mencegah drift antara kode dan Firestore.
+- `seedRoadmap()` dan `addMissingDefaultItems()` sekarang set `status: "planned"` secara eksplisit saat seeding.
+- `generateRoadmapCode()`, `generateRoadmapJSON()`, dan `generateRoadmapMarkdown()` sekarang mengikuti **urutan `DEFAULT_ROADMAP`**, bukan urutan alfabet.
+- Export JS sekarang **menghilangkan `status`** dari output (blueprint only).
+- Export JSON tetap menyimpan `status` (buat restore kalau Firestore ke-wipe).
+- Preview modal **tidak bisa ditutup dengan klik area luar** — konsisten dengan error modal. Hanya tombol ×, ESC, atau aksi (Copy/Download) yang menutup.
+- Tombol Copy dan Download sekarang **otomatis menutup modal** + menampilkan toast.
+- `copyToClipboard()` dirombak dengan fallback `execCommand('copy')` yang lebih reliable di mobile + toast menampilkan jumlah karakter yang di-copy.
+
+### Fixed
+
+- Fixed `textarea` yang tidak bisa render konten > ~15.000 karakter di Chrome Android — diganti ke `<pre>` dengan `white-space: pre` dan `overflow: auto`.
+- Fixed preview yang keliatan "kepotong" — ternyata bukan bug render, tapi urutan alfabet yang bikin user salah kira.
+- Fixed `user-select` yang bocor ke title/filename/tombol di preview modal — sekarang scoped hanya ke `<pre>`.
+- Fixed typo `JS.values` → `JS` di entry 2026-09-17.
+
+### Notes
+
+- **Rule baru:** kode = blueprint, Firestore = state. Jangan edit `title`/`category` di `DEFAULT_ROADMAP` setelah item ada di Firestore — pakai mode Edit di UI roadmap.
+- **Backup workflow:** export JSON secara berkala → simpen di folder `backups/` di repo → commit. Ini jadi historical snapshot kalau Firestore perlu di-restore.
+- Item baru di `DEFAULT_ROADMAP` otomatis ke-seed dengan status `planned` lewat `addMissingDefaultItems()` tanpa menyentuh item lama yang sudah punya status berbeda.
+
 ## 2026-09-17
 
 ### Added
@@ -29,7 +68,7 @@
 - Fixed `roadmap.html` typo: closing tag `</>` diganti `</body>`.
 - Fixed black screen di `editor.html` yang muncul sebentar sebelum konten tampil — sekarang ada loading indicator yang konsisten.
 - Fixed auth loader yang nyangkut di `roadmap.html` ketika `auth-pending` dihapus tapi loader tidak ikut dibersihkan.
-- Fixed `auth is not defined` pada `roadmap.js` dengan memastikan urutan script: `firebase.js` → `auth.js` → `error-modal.js` → halaman JS.values
+- Fixed `auth is not defined` pada `roadmap.js` dengan memastikan urutan script: `firebase.js` → `auth.js` → `error-modal.js` → halaman JS.
 
 ### Security
 

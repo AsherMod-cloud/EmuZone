@@ -15,10 +15,34 @@ const exportClose = document.getElementById("exportClose");
   // Preview modal close
 const previewOverlay = document.getElementById("previewOverlay");
 const previewClose = document.getElementById("previewClose");
+const previewCopyBtn = document.getElementById("previewCopyBtn");
+const previewDownloadBtn = document.getElementById("previewDownloadBtn");
 
 previewClose.addEventListener("click", () => previewOverlay.classList.remove("open"));
-previewOverlay.addEventListener("click", (e) => {
-  if (e.target === previewOverlay) previewOverlay.classList.remove("open");
+
+
+previewCopyBtn.addEventListener("click", () => {
+  const previewEl = document.getElementById("previewText");
+  const content = previewEl.dataset.content;
+  if (!content) {
+    showToast("Preview kosong.", "error");
+    return;
+  }
+  previewOverlay.classList.remove("open");
+  setTimeout(() => copyToClipboard(content, "Roadmap"), 150);
+});
+
+previewDownloadBtn.addEventListener("click", () => {
+  const previewEl = document.getElementById("previewText");
+  const content = previewEl.dataset.content;
+  const filename = previewEl.dataset.filename;
+  const mime = previewEl.dataset.mime;
+  if (!content) {
+    showToast("Preview kosong.", "error");
+    return;
+  }
+  downloadAsFile(content, filename, mime);
+  document.getElementById("previewOverlay").classList.remove("open");
 });
 
 const STATUS = {
@@ -207,6 +231,7 @@ const DEFAULT_ROADMAP = [
   { id: "workspace-notes",               category: "Owner Workspace", title: "Roadmap notes" },
   { id: "workspace-changelog",           category: "Owner Workspace", title: "Development changelog" },
   { id: "workspace-export",              category: "Owner Workspace", title: "Export roadmap" },
+  { id: "workspace-import",              category: "Owner Workspace", title: "Import roadmap"},
 
   // Community
   { id: "community-bookmark",            category: "Community",      title: "Favorite / Bookmark" },
@@ -457,10 +482,6 @@ exportClose.addEventListener("click", () => {
   exportOverlay.classList.remove("open");
 });
 
-exportOverlay.addEventListener("click", (e) => {
-  if (e.target === exportOverlay) exportOverlay.classList.remove("open");
-});
-
 document.getElementById("exportJsBtn").addEventListener("click", () => {
   const content = generateRoadmapCode();
   const filename = `roadmap-${new Date().toISOString().slice(0, 10)}.js`;
@@ -509,27 +530,32 @@ function downloadAsFile(content, filename, mimeType) {
 
 function showPreviewModal(content, filename, mimeType) {
   const overlay = document.getElementById("previewOverlay");
-  const textarea = document.getElementById("previewText");
+  const previewEl = document.getElementById("previewText");
   const title = document.getElementById("previewTitle");
-  const downloadBtn = document.getElementById("previewDownloadBtn");
+  const previewInfo = document.getElementById("previewInfo");
 
+  // Simpen state di element
+  previewEl.dataset.content = content;
+  previewEl.dataset.filename = filename;
+  previewEl.dataset.mime = mimeType;
+
+  // Tampilin FULL content (tanpa potong)
+  const lines = content.split("\n");
   title.textContent = filename;
-  textarea.value = content;
+  previewEl.textContent = content;
 
-  // Ganti handler download (biar dinamis)
-  downloadBtn.onclick = () => {
-    downloadAsFile(content, filename, mimeType);
-    overlay.classList.remove("open");
-  };
+  // Info counter dari content FULL
+  if (previewInfo) {
+    previewInfo.textContent = `${lines.length} baris · ${content.length.toLocaleString("id-ID")} karakter`;
+  }
 
   overlay.classList.add("open");
 
-  // Auto-select all text di textarea biar user tinggal Ctrl+C / long-press copy
-  setTimeout(() => {
-  textarea.focus();
-  textarea.setSelectionRange(0, 0);  // ⬅️ Kursor di awal, gak scroll
-  textarea.scrollTop = 0;            // ⬅️ Force scroll ke atas
- }, 100);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      previewEl.scrollTop = 0;
+    });
+  });
 }
 
 async function seedRoadmap() {
@@ -549,30 +575,35 @@ async function seedRoadmap() {
 
 async function addMissingDefaultItems(snapshot) {
   const existingIds = new Set(snapshot.docs.map(doc => doc.id));
-  const missingItems = DEFAULT_ROADMAP.filter(item => !existingIds.has(item.id));
 
-  if (missingItems.length === 0) {
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const missingItems = DEFAULT_ROADMAP.filter(
+    item => !existingIds.has(item.id)
+  );
+
+  if (missingItems.length > 0) {
+    const batch = db.batch();
+
+    missingItems.forEach(item => {
+      batch.set(roadmapRef.doc(item.id), {
+        category: item.category,
+        title: item.title,
+        status: "planned",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+
+    await batch.commit();
+
+    showToast(`${missingItems.length} roadmap item baru ditambahkan.`);
   }
 
-  const batch = db.batch();
-  missingItems.forEach(item => {
-    batch.set(roadmapRef.doc(item.id), {
-      category: item.category,
-      title: item.title,
-      status: "planned",
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  });
+  const freshSnapshot = await roadmapRef.get();
 
-  await batch.commit();
-  showToast(`${missingItems.length} roadmap item baru ditambahkan.`);
-
-  return [
-    ...snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })),
-    ...missingItems.map(item => ({ ...item, status: "planned" }))
-  ];
+  return freshSnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
 }
   
 async function loadRoadmap() {
@@ -603,23 +634,47 @@ async function loadRoadmap() {
 // EXPORT ROADMAP
 // ============================================================
 
-function generateRoadmapCode() {
-  const sorted = [...roadmapItems].sort((a, b) => a.id.localeCompare(b.id));
+function getOrderedRoadmapItems() {
+  const itemMap = new Map(roadmapItems.map(item => [item.id, item]));
+  const ordered = [];
+  const usedIds = new Set();
 
-  const lines = sorted.map(item => {
+  // 1. Ikutin urutan DEFAULT_ROADMAP
+  DEFAULT_ROADMAP.forEach(d => {
+    const item = itemMap.get(d.id);
+    if (item) {
+      ordered.push(item);
+      usedIds.add(d.id);
+    }
+  });
+
+  // 2. Orphan (ada di Firestore tapi gak di DEFAULT_ROADMAP) — taruh di akhir
+  roadmapItems.forEach(item => {
+    if (!usedIds.has(item.id)) ordered.push(item);
+  });
+
+  return ordered;
+}
+
+function generateRoadmapCode() {
+  const ordered = getOrderedRoadmapItems();
+
+  const lines = ordered.map(item => {
     const id = `"${item.id}"`.padEnd(38);
     const cat = `"${item.category}"`.padEnd(24);
-    const title = `"${item.title}"`.padEnd(48);
-    return `  { id: ${id}, category: ${cat}, title: ${title}, status: "${item.status}" },`;
+    const title = `"${item.title}"`;
+    return `  { id: ${id}, category: ${cat}, title: ${title} },`;
   });
 
   return `const DEFAULT_ROADMAP = [\n${lines.join("\n")}\n];`;
 }
-
+  
 function generateRoadmapJSON() {
-  const snapshot = [...roadmapItems]
-    .sort((a, b) => a.id.localeCompare(b.id))
-    .map(({ id, category, title, status }) => ({ id, category, title, status }));
+  const ordered = getOrderedRoadmapItems();
+
+  const snapshot = ordered.map(({ id, category, title, status }) => ({
+    id, category, title, status
+  }));
 
   return JSON.stringify({
     exportedAt: new Date().toISOString(),
@@ -629,22 +684,24 @@ function generateRoadmapJSON() {
 }
 
 function generateRoadmapMarkdown() {
+  const ordered = getOrderedRoadmapItems();
   const grouped = {};
-  roadmapItems.forEach(item => {
+
+  ordered.forEach(item => {
     if (!grouped[item.category]) grouped[item.category] = [];
     grouped[item.category].push(item);
   });
 
-  const symbol = { done: "✅", partial: "🟡", planned: "⬜", rejected: "❌", blocked: "⛔" };
+  const symbol = { done: "✓", partial: "~", planned: "○", rejected: "X", blocked: "!" };
 
   let md = `# Roadmap Snapshot\n\n> Exported: ${new Date().toLocaleString("id-ID")}\n\n`;
-  Object.keys(grouped).sort().forEach(cat => {
+
+  // Object.keys preserve insertion order → sesuai DEFAULT_ROADMAP
+  Object.keys(grouped).forEach(cat => {
     md += `## ${cat}\n\n`;
-    grouped[cat]
-      .sort((a, b) => a.id.localeCompare(b.id))
-      .forEach(item => {
-        md += `- ${symbol[item.status] || "⬜"} ${item.title}\n`;
-      });
+    grouped[cat].forEach(item => {
+      md += `- ${symbol[item.status] || "○"} ${item.title}\n`;
+    });
     md += "\n";
   });
 
@@ -652,23 +709,47 @@ function generateRoadmapMarkdown() {
 }
 
 async function copyToClipboard(text, label) {
-  try {
-    await navigator.clipboard.writeText(text);
-    showToast(`${label} berhasil dicopy!`);
-  } catch {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.select();
+  // 1. Coba modern API dulu
+  if (navigator.clipboard && window.isSecureContext) {
     try {
-      document.execCommand("copy");
-      showToast(`${label} berhasil dicopy!`);
-    } catch {
-      showToast("Gagal copy. Cek izin clipboard.", "error");
+      await navigator.clipboard.writeText(text);
+      showToast(`${label} ke-copy (${text.length.toLocaleString("id-ID")} char)`);
+      return;
+    } catch (err) {
+      console.warn("Clipboard API failed, pakai fallback:", err);
     }
-    document.body.removeChild(ta);
+  }
+
+  // 2. Fallback: textarea + execCommand
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.setAttribute("readonly", "");
+  ta.style.position = "fixed";
+  ta.style.top = "0";
+  ta.style.left = "0";
+  ta.style.width = "1px";
+  ta.style.height = "1px";
+  ta.style.opacity = "0";
+  ta.style.pointerEvents = "none";
+  document.body.appendChild(ta);
+
+  ta.focus();
+  ta.select();
+  ta.setSelectionRange(0, text.length);
+
+  let ok = false;
+  try {
+    ok = document.execCommand("copy");
+  } catch (err) {
+    console.error("execCommand copy failed:", err);
+  }
+
+  document.body.removeChild(ta);
+
+  if (ok) {
+    showToast(`${label} ke-copy (${text.length.toLocaleString("id-ID")} char)`);
+  } else {
+    showToast("Gagal copy. Long-press manual di preview.", "error");
   }
 }
 
