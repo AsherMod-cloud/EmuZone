@@ -1,5 +1,7 @@
 // Lindungi halaman ini — cuma admin yang login yang boleh akses
-requireAdmin();
+guardAdminPage(() => initEditor());
+
+function initEditor() {
 
 const params = new URLSearchParams(window.location.search);
 const editId = params.get("id");
@@ -391,4 +393,8 @@ requiredFields.forEach(id => {
 // ---------- Cancel / Back ----------
 cancelBtn.addEventListener("click", () => window.location.href = "index.html");
 backBtn.addEventListener("click", () => window.location.href = "index.html");
+// Force remove loader & auth-pending
+document.querySelector(".auth-loader")?.remove();
+document.body.classList.remove("auth-pending");
 
+}

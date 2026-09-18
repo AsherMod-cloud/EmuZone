@@ -1,5 +1,41 @@
 # Changelog
 
+## 2026-09-17
+
+### Added
+
+- Added a reusable error modal system (`js/error-modal.js` + `css/error-modal.css`) supporting three error types with distinct accent colors:
+  - `404` — biru (`#5fb0ff`) untuk halaman/game tidak ditemukan.
+  - `500` — merah (`#ff5555`) untuk kegagalan koneksi Firestore.
+  - `403` — kuning (`#ffcc00`) untuk akses admin yang ditolak.
+- Added auto-injection of error modal HTML into `document.body`, so each page only needs to include the CSS + JS once.
+- Added `showErrorModal(code)` public API — reusable across `game.html`, `editor.html`, dan `roadmap.html`.
+- Added dynamic `<title>` update in the error modal (contoh: `404 — GAME NOT FOUND | Emulator Games ID`), mencegah URL bar nyangkut di `"Loading..."`.
+- Added auth loader (`spinner + "Memverifikasi akses..."`) yang muncul saat `guardAdminPage()` sedang memvalidasi sesi admin.
+- Added `MutationObserver` pada `<body>` untuk auto-remove auth loader kapanpun class `auth-pending` dihapus — mencegah loader nyangkut.
+- Added `guardAdminPage(onAuthorized)` di `js/auth.js` sebagai pengganti `requireAdmin()` untuk editor dan roadmap.
+
+### Changed
+
+- Editor dan roadmap sekarang menyembunyikan seluruh konten via `body.auth-pending` sampai auth check selesai, sehingga tidak ada flash of unauthorized content sebelum modal 403 muncul.
+- Error modal sengaja **tidak dapat ditutup dengan klik area luar** — satu-satunya jalan keluar adalah tombol aksi atau tombol `ESC` (yang otomatis men-trigger tombol aksi).
+- Warna aksen modal (`--err-accent` dan `--err-accent-rgb`) di-set per tipe error via inline CSS variable, sehingga satu komponen CSS bisa dipakai untuk semua jenis error.
+- `game.js` `renderNotFound()` sekarang memanggil `showErrorModal(404)` alih-alih merender fallback HTML inline.
+- `editor.js` dan `roadmap.js` dibungkus ke dalam `initEditor()` / `initRoadmap()` dan dijalankan lewat `guardAdminPage()`.
+- `auth.js` `guardAdminPage()` sekarang menghapus auth loader dan class `auth-pending` secara eksplisit saat admin tervalidasi.
+
+### Fixed
+
+- Fixed `roadmap.html` typo: closing tag `</>` diganti `</body>`.
+- Fixed black screen di `editor.html` yang muncul sebentar sebelum konten tampil — sekarang ada loading indicator yang konsisten.
+- Fixed auth loader yang nyangkut di `roadmap.html` ketika `auth-pending` dihapus tapi loader tidak ikut dibersihkan.
+- Fixed `auth is not defined` pada `roadmap.js` dengan memastikan urutan script: `firebase.js` → `auth.js` → `error-modal.js` → halaman JS.values
+
+### Security
+
+- Migrated from `requireAdmin()` (yang hanya redirect) ke `guardAdminPage()` yang menahan render konten sampai auth check selesai — mencegah flash of unauthorized content.
+- Auth guard sekarang handle session non-admin dengan `signOut()` otomatis sebelum menampilkan modal 403.
+
 ## 2026-08-28
 
 ### Added

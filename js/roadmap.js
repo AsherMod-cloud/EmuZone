@@ -1,4 +1,6 @@
-requireAdmin();
+guardAdminPage(() => initRoadmap());
+
+function initRoadmap() {
 
 const roadmapNotepad = document.getElementById("roadmapNotepad");
 const roadmapMeta = document.getElementById("roadmapMeta");
@@ -113,6 +115,8 @@ const DEFAULT_ROADMAP = [
   { id: "ux-telegram-share", category: "UI / UX", title: "Telegram Share", status: "done" },
   { id: "ux-x-share", category: "UI / UX", title: "X Share", status: "done" },
   { id: "ux-long-press", category: "UI / UX", title: "Long-press quick card", status: "done" },
+  { id: "ux-error-modal", category: "UI / UX", title: "Reusable error modal (404/500/403)", status: "done" },
+  { id: "ux-auth-loader", category: "UI / UX", title: "Auth verification loader", status: "done" },
   { id: "ux-skeleton-loading", category: "UI / UX", title: "Skeleton loading", status: "planned" },
   { id: "ux-loading-indicator", category: "UI / UX", title: "Loading indicator", status: "planned" },
   { id: "ux-lazy-images", category: "UI / UX", title: "Lazy loading image", status: "planned" },
@@ -140,6 +144,7 @@ const DEFAULT_ROADMAP = [
   // Security
   { id: "security-auth", category: "Security", title: "Firebase Authentication", status: "done" },
   { id: "security-firestore-rules", category: "Security", title: "Firestore Security Rules", status: "partial" },
+  { id: "security-page-guard", category: "Security", title: "Hidden content auth guard", status: "done" },
   { id: "security-uid-whitelist", category: "Security", title: "Admin UID whitelist", status: "planned" },
   { id: "security-input-validation", category: "Security", title: "Input validation", status: "planned" },
   { id: "security-xss", category: "Security", title: "XSS protection", status: "planned" },
@@ -495,6 +500,7 @@ async function loadRoadmap() {
   }
 }
 
-auth.onAuthStateChanged(user => {
-  if (user) loadRoadmap();
-});
+// Panggil loadRoadmap() langsung (karena udah dijamin admin)
+loadRoadmap();
+
+}

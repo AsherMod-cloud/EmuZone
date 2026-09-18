@@ -18,15 +18,16 @@
 href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
 
 <link rel="stylesheet" href="css/editor.css">
+<link rel="stylesheet" href="css/error-modal.css">
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 </head>
-
-<body>
-
+  
+<body class="auth-pending">
+  
 <header class="topbar">
 
     <div>
@@ -536,6 +537,7 @@ placeholder="November 2, 2010">
 
 <script src="js/firebase.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/error-modal.js"></script>   <!-- ⬅️ TAMBAH -->
 <script src="js/emulator-config.js"></script>
 <script src="js/editor.js"></script>
 

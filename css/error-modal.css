@@ -1,0 +1,205 @@
+/* ============================================================
+   ERROR MODAL — Reusable standalone modal
+   Author: Emulator Games ID
+   Usage:  <link rel="stylesheet" href="css/error-modal.css">
+           <script src="js/error-modal.js"></script>
+           showErrorModal(404 | 500 | 403);
+   ============================================================ */
+
+.error-modal-overlay{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+
+  /* Hitam transparan + blur */
+  background: rgba(8, 8, 12, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .3s ease, visibility .3s ease;
+}
+
+.error-modal-overlay.open{
+  opacity: 1;
+  visibility: visible;
+}
+
+.error-modal-card{
+  --err-accent: #5fb0ff;
+  --err-accent-rgb: 95, 176, 255;
+
+  width: 100%;
+  max-width: 380px;
+  padding: 28px 22px 22px;
+  text-align: center;
+
+  background: rgba(10, 12, 18, 0.92);
+  border: 1px solid rgba(var(--err-accent-rgb), 0.55);
+  border-radius: 6px;
+  box-shadow:
+    0 0 0 1px rgba(var(--err-accent-rgb), 0.08),
+    0 0 24px rgba(var(--err-accent-rgb), 0.18),
+    0 20px 60px rgba(0, 0, 0, 0.6);
+
+  transform: translateY(8px) scale(0.97);
+  transition: transform .35s cubic-bezier(.2,.9,.3,1.2),
+              border-color .3s ease,
+              box-shadow .3s ease;
+}
+
+.error-modal-overlay.open .error-modal-card{
+  transform: translateY(0) scale(1);
+}
+
+/* ---- Tag (contoh: [ ERROR 404 - GAME NOT FOUND ]) ---- */
+.error-modal-tag{
+  font-family: 'JetBrains Mono', 'Space Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 2px;
+  color: var(--err-accent);
+  opacity: .9;
+  margin-bottom: 14px;
+  word-break: break-word;
+}
+
+/* ---- Ikon ---- */
+.error-modal-icon{
+  font-size: 34px;
+  line-height: 1;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 0 10px rgba(var(--err-accent-rgb), 0.4));
+}
+
+/* ---- Judul (pixel font) ---- */
+.error-modal-title{
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  letter-spacing: 1.5px;
+  color: #fff;
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+
+/* ---- Deskripsi ---- */
+.error-modal-desc{
+  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #a5a5b0;
+  margin: 0 0 22px;
+}
+
+/* ---- Tombol utama ---- */
+.error-modal-btn{
+  display: inline-block;
+  padding: 12px 22px;
+  font-family: 'JetBrains Mono', 'Space Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--err-accent);
+  background: rgba(var(--err-accent-rgb), 0.06);
+  border: 1px solid rgba(var(--err-accent-rgb), 0.55);
+  border-radius: 3px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease,
+              box-shadow .2s ease, transform .15s ease;
+}
+
+.error-modal-btn:hover{
+  background: var(--err-accent);
+  color: #05060a;
+  box-shadow: 0 0 18px rgba(var(--err-accent-rgb), 0.55);
+  transform: translateY(-1px);
+}
+
+.error-modal-btn:active{
+  transform: translateY(0);
+}
+
+/* ---- Footer hint ---- */
+.error-modal-footer{
+  margin: 18px 0 0;
+  font-family: 'JetBrains Mono', 'Space Mono', monospace;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.25);
+  letter-spacing: 1px;
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 420px){
+  .error-modal-card{ padding: 24px 18px 18px; }
+  .error-modal-title{ font-size: 12px; }
+  .error-modal-icon{ font-size: 28px; }
+  .error-modal-tag{ font-size: 9.5px; letter-spacing: 1.5px; }
+}
+
+/* ============================================================
+   AUTH GUARD — Sembunyiin konten sementara auth check jalan
+   Dipakai bareng class "auth-pending" di <body>
+   ============================================================ */
+/* Sembunyiin semua anak body saat auth check */
+body.auth-pending > * {
+  display: none !important;
+}
+
+/* Pengecualian: modal error & auth loader tetap tampil */
+body.auth-pending > .error-modal-overlay,
+body.auth-pending > .auth-loader {
+  display: flex !important;
+}
+
+/* ---- Auth Loader ---- */
+.auth-loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: #0a0c12;
+  z-index: 9998;
+  font-family: 'JetBrains Mono', 'Space Mono', monospace;
+}
+
+.auth-loader-spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid rgba(95, 176, 255, 0.15);
+  border-top-color: #5fb0ff;
+  border-radius: 50%;
+  animation: authSpin 0.8s linear infinite;
+}
+
+@keyframes authSpin {
+  to { transform: rotate(360deg); }
+}
+
+.auth-loader-text {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #5fb0ff;
+  opacity: 0.85;
+  text-transform: uppercase;
+}
+
+.auth-loader-dots::after {
+  content: "";
+  animation: authDots 1.5s steps(4, end) infinite;
+}
+
+@keyframes authDots {
+  0%   { content: ""; }
+  25%  { content: "."; }
+  50%  { content: ".."; }
+  75%  { content: "..."; }
+  100% { content: ""; }
+}

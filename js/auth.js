@@ -69,6 +69,33 @@ function requireAdmin() {
     });
 }
 
+// ============================================================
+// ADMIN PAGE GUARD
+// Sembunyiin konten (via body.auth-pending) sampe auth selesai.
+// Admin valid -> tampilkan konten & jalankan callback.
+// Non-admin  -> tampilkan error modal 403.
+// ============================================================
+ function guardAdminPage(onAuthorized) {
+  document.body.classList.add("auth-pending");
+
+  auth.onAuthStateChanged(user => {
+    if (!user || !isAdminUser(user)) {
+      if (user) { auth.signOut(); return; }
+      showErrorModal(403);
+      return;
+    }
+
+    // ✅ WAJIB 2 baris ini
+    const loader = document.querySelector(".auth-loader");
+    if (loader) loader.remove();
+    document.body.classList.remove("auth-pending");
+
+    if (typeof onAuthorized === "function") {
+      onAuthorized(user, getAdminProfile(user));
+    }
+  });
+ }
+
 function redirectIfLoggedIn() {
     auth.onAuthStateChanged(user => {
         if (!user) return;

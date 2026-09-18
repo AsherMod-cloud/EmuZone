@@ -3,12 +3,32 @@ const slug = params.get("slug");
 const root = document.getElementById("gameRoot");
 
 function renderNotFound(){
-  root.innerHTML = `
-    <div class="game-notfound">
-      <p>Game gak ketemu. Mungkin link-nya salah atau game udah dihapus.</p>
-      <a class="btn primary" href="index.html">← Balik ke daftar game</a>
-    </div>
-  `;
+  root.innerHTML = "";
+  showErrorModal(404);
+}
+
+// ... di bagian paling bawah:
+if(!slug){
+  renderNotFound();
+} else {
+  gamesRef.where("slug", "==", slug).limit(1).get().then(snap => {
+    if(snap.empty){
+      gamesRef.doc(slug).get().then(doc => {
+        if(!doc.exists){ renderNotFound(); return; }
+        render(doc.data(), doc.id);
+      }).catch(() => {
+        root.innerHTML = "";
+        showErrorModal(500);  // ⬅️ ganti renderNotFound jadi 500
+      });
+      return;
+    }
+    const doc = snap.docs[0];
+    render(doc.data(), doc.id);
+  }).catch(err => {
+    console.error(err);
+    root.innerHTML = "";
+    showErrorModal(500);  // ⬅️ ganti renderNotFound jadi 500
+  });
 }
 
 const STATUS_ICON = { Playable: "🟢", Testing: "🟡", Broken: "🔴" };
