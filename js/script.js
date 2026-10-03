@@ -187,3 +187,37 @@ window.addEventListener("hashchange", checkAdminHash);
     if(e.key === "Escape") closeQuickCard();
   });
   modalCard.addEventListener("click", (e) => e.stopPropagation());
+
+// ---------- Welcome modal (per-session) ----------
+(function setupWelcomeModal(){
+  const overlay = document.getElementById("welcomeOverlay");
+  const continueBtn = document.getElementById("welcomeContinue");
+  const sessionCheck = document.getElementById("welcomeSessionCheck");
+  const sessionKey = "emulatorGamesIdWelcomeSeen";
+  if(!overlay || !continueBtn || !sessionCheck) return;
+
+  const close = () => {
+    if(sessionCheck.checked){
+      sessionStorage.setItem(sessionKey, "1");
+    }
+    overlay.classList.remove("open");
+    document.body.classList.remove("modal-open");
+  };
+
+  if(!sessionStorage.getItem(sessionKey)){
+    requestAnimationFrame(() => {
+      overlay.classList.add("open");
+      document.body.classList.add("modal-open");
+    });
+  } else {
+    overlay.remove();
+  }
+
+  continueBtn.addEventListener("click", close);
+  overlay.addEventListener("click", (event) => {
+    if(event.target === overlay) close();
+  });
+  document.addEventListener("keydown", (event) => {
+    if(event.key === "Escape" && overlay.classList.contains("open")) close();
+  });
+})();

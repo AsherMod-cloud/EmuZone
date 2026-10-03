@@ -151,6 +151,7 @@ const DEFAULT_ROADMAP = [
   { id: "ux-x-share",                    category: "UI / UX",        title: "X Share" },
   { id: "ux-long-press",                 category: "UI / UX",        title: "Long-press quick card" },
   { id: "ux-error-modal",                category: "UI / UX",        title: "Reusable error modal (404/500/403)" },
+  { id: "ux-welcome-modal",              category: "UI / UX",        title: "Welcome modal" },
   { id: "ux-auth-loader",                category: "UI / UX",        title: "Auth verification loader" },
   { id: "ux-skeleton-loading",           category: "UI / UX",        title: "Skeleton loading" },
   { id: "ux-loading-indicator",          category: "UI / UX",        title: "Loading indicator" },

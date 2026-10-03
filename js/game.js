@@ -2,7 +2,46 @@ const params = new URLSearchParams(window.location.search);
 const slug = params.get("slug");
 const root = document.getElementById("gameRoot");
 
+const DEFAULT_OG_IMAGE = "assets/image/og-image.png";
+
+function absoluteUrl(value){
+  try { return new URL(value, window.location.href).href; }
+  catch { return new URL(DEFAULT_OG_IMAGE, window.location.href).href; }
+}
+
+function setFallbackSocialMetadata(){
+  const fallback = absoluteUrl(DEFAULT_OG_IMAGE);
+  document.title = "Game Tidak Ditemukan — Emulator Games ID";
+  document.getElementById("metaDesc")?.setAttribute("content", "Game yang dicari tidak ditemukan di Emulator Games ID.");
+  document.getElementById("ogTitle")?.setAttribute("content", "Emulator Games ID");
+  document.getElementById("ogDesc")?.setAttribute("content", "Koleksi game emulator klasik, siap main.");
+  document.getElementById("ogImage")?.setAttribute("content", fallback);
+  document.getElementById("ogUrl")?.setAttribute("content", window.location.href);
+  document.getElementById("twTitle")?.setAttribute("content", "Emulator Games ID");
+  document.getElementById("twDesc")?.setAttribute("content", "Koleksi game emulator klasik, siap main.");
+  document.getElementById("twImage")?.setAttribute("content", fallback);
+  document.getElementById("canonicalUrl")?.setAttribute("href", window.location.href);
+}
+
+function setSocialImage(candidate){
+  const fallback = absoluteUrl(DEFAULT_OG_IMAGE);
+  const imageMeta = document.getElementById("ogImage");
+  const twitterMeta = document.getElementById("twImage");
+  const chosen = candidate ? absoluteUrl(candidate) : fallback;
+  const apply = (url) => {
+    imageMeta?.setAttribute("content", url);
+    twitterMeta?.setAttribute("content", url);
+  };
+  apply(chosen);
+  if(!candidate) return;
+  const probe = new Image();
+  probe.onload = () => apply(chosen);
+  probe.onerror = () => apply(fallback);
+  probe.src = chosen;
+}
+
 function renderNotFound(){
+  setFallbackSocialMetadata();
   root.innerHTML = "";
   showErrorModal(404);
 }
@@ -394,7 +433,6 @@ function setupShareModal(g){
 
   fab.onclick = open;
   document.getElementById("shareClose").onclick = close;
-  overlay.onclick = (e) => { if(e.target === overlay) close(); };
   card.onclick = (e) => e.stopPropagation();
 }
 

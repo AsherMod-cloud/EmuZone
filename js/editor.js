@@ -151,7 +151,6 @@ const mdInfoClose = document.getElementById("mdInfoClose");
 mdInfoBtn.addEventListener("click", () => mdInfoOverlay.classList.add("open"));
 mdInfoClose.addEventListener("click", () => mdInfoOverlay.classList.remove("open"));
 mdInfoOverlay.addEventListener("click", (e) => {
-  if (e.target === mdInfoOverlay) mdInfoOverlay.classList.remove("open");
 });
 mdInfoCard.addEventListener("click", (e) => e.stopPropagation());
 

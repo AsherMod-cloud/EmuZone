@@ -341,3 +341,58 @@
     background:var(--bg-raised);
     color:var(--ink-dim); font-style:italic;
   }
+
+/* ---- Welcome modal ---- */
+body.modal-open{
+  overflow:hidden;
+}
+
+.welcome-overlay{
+  z-index:120;
+}
+.welcome-card{
+  max-width:620px;
+}
+.welcome-body{
+  gap:12px;
+  padding:clamp(22px,5vw,38px);
+}
+.welcome-kicker{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  letter-spacing:2px;
+  color:var(--amber);
+}
+.welcome-body h2{
+  margin:0;
+  font-size:clamp(20px,4vw,30px);
+}
+.welcome-body h3{
+  margin:12px 0 -2px;
+  font-size:17px;
+  color:var(--ink);
+}
+.welcome-body p{
+  margin:0;
+  color:var(--ink-dim);
+  font-size:14px;
+  line-height:1.7;
+}
+.session-choice{
+  display:flex;
+  align-items:flex-start;
+  gap:9px;
+  margin-top:8px;
+  color:var(--ink-dim);
+  font-size:13px;
+  cursor:pointer;
+}
+.session-choice input{
+  accent-color:var(--amber);
+  margin-top:4px;
+}
+.welcome-continue{
+  width:100%;
+  margin-top:4px;
+  flex:none;
+}

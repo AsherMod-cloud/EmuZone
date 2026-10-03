@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-03
+
+### Added
+- Menambahkan metadata SEO beranda, canonical URL, Open Graph, Twitter Card, dan tag warna tema.
+- Menambahkan gambar sosial cadangan khusus di `assets/image/og-image.png`.
+- Menambahkan modal selamat datang per sesi pada halaman beranda untuk menjelaskan tujuan dan status pengembangan project.
+
+### Notes
+- Fokus rilis V1 adalah publish versi yang sudah stabil dan usable terlebih dahulu. Penyempurnaan OG image dan metadata sosial lanjutan dapat ditunda ke tahap berikutnya agar tidak menahan publikasi.
+
+### Improved
+- Peningkatan pada pengaturan metadata sosial `game.html` dan penanganan URL kanonik.
+- Halaman game sekarang menggunakan cover game terlebih dahulu, kemudian banner, untuk `og:image` dan gambar Twitter.
+- Menambahkan validasi gambar saat runtime dengan fallback ke gambar OG utama ketika cover/banner hilang atau tidak valid.
+- Tautan game yang tidak valid atau hilang sekarang mengatur ulang metadata sosial ke gambar fallback utama.
+
 ## 2026-09-18
 
 ### Added

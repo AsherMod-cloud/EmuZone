@@ -4,7 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Emulator Games ID — Ambil, Mainkan, Nostalgia</title>
-<meta name="description" content="Koleksi game emulator klasik NES, SNES, PS1, GBA, sampai PSP. Siap main, tinggal unduh.">
+<meta name="description" content="Temukan game emulator klasik NES, SNES, PS1, GBA, PSP, dan konsol lainnya. Koleksi game, screenshot, emulator, dan resource dalam satu tempat.">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#1c1b1f">
+<link rel="canonical" href="https://emulator-games-id.pages.dev/">
+<meta property="og:title" content="Emulator Games ID — Ambil, Mainkan, Nostalgia">
+<meta property="og:description" content="Koleksi game emulator klasik, screenshot, emulator, dan resource dalam satu tempat.">
+<meta property="og:image" content="https://emulator-games-id.pages.dev/assets/image/og-image.png">
+<meta property="og:url" content="https://emulator-games-id.pages.dev/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Emulator Games ID">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Emulator Games ID — Ambil, Mainkan, Nostalgia">
+<meta name="twitter:description" content="Koleksi game emulator klasik, screenshot, emulator, dan resource dalam satu tempat.">
+<meta name="twitter:image" content="https://emulator-games-id.pages.dev/assets/image/og-image.png">
 <link rel="icon" href="assets/image/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -100,6 +113,22 @@
     </span>
 
 </section>
+
+<!-- Welcome modal: hanya disembunyikan permanen untuk sesi browser saat checkbox dipilih -->
+<div class="modal-overlay welcome-overlay" id="welcomeOverlay" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+  <div class="modal-card welcome-card">
+    <div class="modal-body welcome-body">
+      <div class="welcome-kicker">EMULATOR GAMES ID</div>
+      <h2 id="welcomeTitle">Tentang Emulator Games ID</h2>
+      <p>Emulator Games ID dibuat sebagai tempat sederhana untuk menemukan dan mengakses game emulator dalam satu tempat.</p>
+      <p>Website ini juga merupakan lanjutan dari Channel WhatsApp <a href="https://whatsapp.com/channel/0029Vb40CwnL2ATxKtEIm046" target="_blank" rel="noopener">Emulator Games ID</a>, yang sebelumnya sudah lama tidak aktif dan tidak terurus. Website ini dibuat sebagai langkah untuk menghidupkan kembali project tersebut secara bertahap.</p>
+      <h3>Status Project</h3>
+      <p>Website ini masih dalam tahap pengembangan. Beberapa fitur dan konten mungkin belum tersedia dan akan ditambahkan secara bertahap. Kami akan terus mengembangkan website ini sedikit demi sedikit. Terima kasih sudah berkunjung dan mendukung project ini.</p>
+      <label class="session-choice"><input type="checkbox" id="welcomeSessionCheck"> <span>Jangan tampilkan lagi di sesi ini</span></label>
+      <button class="btn primary welcome-continue" id="welcomeContinue" type="button">MENGERTI &amp; LANJUT</button>
+    </div>
+  </div>
+</div>
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-card quick-card" id="modalCard">
