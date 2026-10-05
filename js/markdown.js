@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * Emulator Games ID Markdown Parser
+ * EmuZone Markdown Parser
  * ------------------------------------------------------------
  * Version : 1.0.0
  * Author  : AsherMod

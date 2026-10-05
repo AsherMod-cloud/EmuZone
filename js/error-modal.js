@@ -1,6 +1,6 @@
 /* ============================================================
    ERROR MODAL — Reusable standalone
-   Author: Emulator Games ID
+   Author: EmuZone
    Deps:   css/error-modal.css (wajib di-include)
    Usage:  showErrorModal(404);
            showErrorModal(500);
@@ -87,7 +87,7 @@
     card.style.setProperty("--err-accent-rgb", cfg.accentRgb);
 
     // Update title browser (biar gak nyangkut "Loading...")
-    document.title = `${code} — ${cfg.title} | Emulator Games ID`;
+    document.title = `${code} — ${cfg.title} | EmuZone`;
 
     // Update meta description kalau ada
     const metaDesc = document.getElementById("metaDesc");

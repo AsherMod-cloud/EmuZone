@@ -11,13 +11,13 @@ function absoluteUrl(value){
 
 function setFallbackSocialMetadata(){
   const fallback = absoluteUrl(DEFAULT_OG_IMAGE);
-  document.title = "Game Tidak Ditemukan — Emulator Games ID";
-  document.getElementById("metaDesc")?.setAttribute("content", "Game yang dicari tidak ditemukan di Emulator Games ID.");
-  document.getElementById("ogTitle")?.setAttribute("content", "Emulator Games ID");
+  document.title = "Game Tidak Ditemukan — EmuZone";
+  document.getElementById("metaDesc")?.setAttribute("content", "Game yang dicari tidak ditemukan di EmuZone.");
+  document.getElementById("ogTitle")?.setAttribute("content", "EmuZone");
   document.getElementById("ogDesc")?.setAttribute("content", "Koleksi game emulator klasik, siap main.");
   document.getElementById("ogImage")?.setAttribute("content", fallback);
   document.getElementById("ogUrl")?.setAttribute("content", window.location.href);
-  document.getElementById("twTitle")?.setAttribute("content", "Emulator Games ID");
+  document.getElementById("twTitle")?.setAttribute("content", "EmuZone");
   document.getElementById("twDesc")?.setAttribute("content", "Koleksi game emulator klasik, siap main.");
   document.getElementById("twImage")?.setAttribute("content", fallback);
   document.getElementById("canonicalUrl")?.setAttribute("href", window.location.href);
@@ -283,7 +283,7 @@ function render(game, id){
     .slice(0, 155);
   const shareImage = g.cover || g.banner || "assets/image/favicon.png";
 
-  document.title = `${g.title} — Emulator Games ID`;
+  document.title = `${g.title} — EmuZone`;
   document.getElementById("metaDesc").setAttribute("content", shortDesc);
 
   document.getElementById("ogTitle").setAttribute("content", g.title);
@@ -413,7 +413,7 @@ function setupShareModal(g){
   const card = document.getElementById("shareCard");
   const fab = document.getElementById("shareFab");
   const url = location.href;
-  const text = g.title ? `${g.title} — Emulator Games ID` : document.title;
+  const text = g.title ? `${g.title} — EmuZone` : document.title;
 
   document.getElementById("shareWaBtn").href = `https://wa.me/?text=${encodeURIComponent(text + "\n" + url)}`;
   document.getElementById("shareTgBtn").href = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;

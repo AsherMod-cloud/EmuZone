@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-06
+
+### Changed
+- Mengganti nama project dari `Emulator Games ID` menjadi `EmuZone.ID`.
+- Mengganti URL website menjadi `https://emuzone.pages.dev/`.
+- Memperbarui branding website dan metadata terkait ke identitas `EmuZone`.
+- Mengganti favicon dan `og-image`.
+- Memperbarui nama, profile, deskripsi, dan format share pada channel.
+- Memperbarui status channel menjadi aktif kembali.
+
 ## 2026-10-03
 
 ### Added
