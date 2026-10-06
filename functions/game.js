@@ -15,25 +15,15 @@ export async function onRequestGet(context) {
     try {
         const firestoreResponse = await fetch(firestoreUrl, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 structuredQuery: {
-                    from: [
-                        {
-                            collectionId: "games"
-                        }
-                    ],
+                    from: [{ collectionId: "games" }],
                     where: {
                         fieldFilter: {
-                            field: {
-                                fieldPath: "slug"
-                            },
+                            field: { fieldPath: "slug" },
                             op: "EQUAL",
-                            value: {
-                                stringValue: slug
-                            }
+                            value: { stringValue: slug }
                         }
                     },
                     limit: 1
@@ -43,18 +33,16 @@ export async function onRequestGet(context) {
 
         if (firestoreResponse.ok) {
             const results = await firestoreResponse.json();
-
             const result = results.find(item => item.document);
 
             if (result?.document) {
                 const fields = result.document.fields || {};
-
                 game = {
-                    title: fields.title?.stringValue || "",
-                    slug: fields.slug?.stringValue || "",
-                    cover: fields.cover?.stringValue || "",
-                    banner: fields.banner?.stringValue || "",
-                    console: fields.console?.stringValue || "",
+                    title:    fields.title?.stringValue || "",
+                    slug:     fields.slug?.stringValue || "",
+                    cover:    fields.cover?.stringValue || "",
+                    banner:   fields.banner?.stringValue || "",
+                    console:  fields.console?.stringValue || "",
                     emulator: fields.emulator?.stringValue || ""
                 };
             }
@@ -64,92 +52,87 @@ export async function onRequestGet(context) {
     }
 
     const response = await context.next();
-
-    if (!response.ok) {
-        return response;
-    }
-
-    if (!game) {
-        return response;
-    }
+    if (!response.ok) return response;
+    if (!game) return response;
 
     let html = await response.text();
 
-    const fallbackImage =
-        "https://emuzone.pages.dev/assets/image/og-image.png";
-
-    const title = game.title || "EmuZone";
-
-    const image =
-        game.cover ||
-        game.banner ||
-        fallbackImage;
-
-    function generateOgDescription(game) {
-        const title = game.title || "";
-        const consoleName = game.console || "";
-        const emulator = game.emulator || "";
-
-        if (consoleName && emulator) {
-            return `Download ${title} untuk ${consoleName}. Playable via ${emulator}. ROM, firmware, dan file pendukung tersedia di EmuZone.`;
-        }
-
-        if (consoleName) {
-            return `Download ${title} untuk ${consoleName}. Tersedia ROM dan file pendukung di EmuZone.`;
-        }
-
-        return `Download ${title}. Tersedia ROM dan file pendukung di EmuZone.`;
-    }
-
-    const description = generateOgDescription(game);
-
-    const canonical =
-        "https://emuzone.pages.dev/game?slug=" +
-        encodeURIComponent(game.slug || slug);
-
-    function replaceMeta(id, content) {
-        const escaped = String(content)
+    // ============================================================
+    // HELPERS
+    // ============================================================
+    function escapeHtml(str) {
+        return String(str)
             .replace(/&/g, "&amp;")
             .replace(/"/g, "&quot;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;");
-
-        const regex = new RegExp(
-            `<meta id="${id}"[^>]*>`,
-            "i"
-        );
-
-        html = html.replace(
-            regex,
-            `<meta id="${id}" content="${escaped}">`
-        );
     }
 
-    replaceMeta("ogTitle", title);
-    replaceMeta("ogDesc", description);
-    replaceMeta("ogImage", image);
-    replaceMeta("ogUrl", canonical);
+    function toAbsoluteUrl(url) {
+        if (!url) return null;
+        if (/^https?:\/\//i.test(url)) return url;
+        return "https://emuzone.pages.dev/" + url.replace(/^\/+/, "");
+    }
 
-    replaceMeta("twTitle", title);
-    replaceMeta("twDesc", description);
-    replaceMeta("twImage", image);
+    function generateOgDescription(g) {
+        const t = g.title || "";
+        const c = g.console || "";
+        const e = g.emulator || "";
 
+        if (c && e) return `Download ${t} untuk ${c}. Playable via ${e}. ROM, firmware, dan file pendukung tersedia di EmuZone.`;
+        if (c) return `Download ${t} untuk ${c}. Tersedia ROM dan file pendukung di EmuZone.`;
+        return `Download ${t}. Tersedia ROM dan file pendukung di EmuZone.`;
+    }
+
+    function replaceMeta(id, content, extraAttrs) {
+        const escaped = escapeHtml(content);
+        const regex = new RegExp(`<meta\\s+[^>]*id=["']${id}["'][^>]*>`, "i");
+        const attrs = extraAttrs ? ` ${extraAttrs}` : "";
+        html = html.replace(regex, `<meta${attrs} id="${id}" content="${escaped}">`);
+    }
+
+    // ============================================================
+    // BUILD VALUES
+    // ============================================================
+    const fallbackImage = "https://emuzone.pages.dev/assets/image/og-image.png";
+    const title = game.title || "EmuZone";
+    const image = toAbsoluteUrl(game.cover) 
+               || toAbsoluteUrl(game.banner) 
+               || fallbackImage;
+    const description = generateOgDescription(game);
+    const canonical = "https://emuzone.pages.dev/game?slug=" + encodeURIComponent(game.slug || slug);
+
+    // ============================================================
+    // REPLACE META
+    // ============================================================
+    replaceMeta("metaDesc", description, 'name="description"');
+
+    replaceMeta("ogTitle", title,       'property="og:title"');
+    replaceMeta("ogDesc",  description, 'property="og:description"');
+    replaceMeta("ogImage", image,       'property="og:image"');
+    replaceMeta("ogUrl",   canonical,   'property="og:url"');
+
+    replaceMeta("twTitle", title,       'name="twitter:title"');
+    replaceMeta("twDesc",  description, 'name="twitter:description"');
+    replaceMeta("twImage", image,       'name="twitter:image"');
+
+    // Canonical link
     html = html.replace(
-        /<link id="canonicalUrl"[^>]*>/i,
+        /<link\s+[^>]*id=["']canonicalUrl["'][^>]*>/i,
         `<link id="canonicalUrl" rel="canonical" href="${canonical}">`
     );
 
+    // Title
     html = html.replace(
         /<title>[\s\S]*?<\/title>/i,
-        `<title>${title.replace(/</g, "&lt;").replace(/>/g, "&gt;")} — EmuZone</title>`
+        `<title>${escapeHtml(title)} — EmuZone</title>`
     );
 
+    // ============================================================
+    // RETURN
+    // ============================================================
     const headers = new Headers(response.headers);
-
-    headers.set(
-        "Content-Type",
-        "text/html; charset=UTF-8"
-    );
+    headers.set("Content-Type", "text/html; charset=UTF-8");
 
     return new Response(html, {
         status: response.status,

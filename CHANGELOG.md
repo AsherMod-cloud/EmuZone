@@ -2,13 +2,44 @@
 
 ## 2026-10-06
 
+### Added
+- **Cloudflare Pages Function** (`functions/game.js`) untuk server-side rendering metadata sosial per game:
+  - Fetch data game dari Firestore REST API berdasarkan `slug`.
+  - Inject `og:title`, `og:description`, `og:image`, `og:url`, `twitter:title`, `twitter:description`, `twitter:image` langsung ke HTML sebelum dikirim ke client.
+  - Dynamic `canonical URL` dan `<title>` per game.
+  - Auto-generate OG description berbasis template: `"Download {title} untuk {console}. Playable via {emulator}..."` dengan fallback bertingkat jika console/emulator kosong.
+- Helper `escapeHtml()` untuk mencegah XSS & karakter rusak di meta tags.
+- Helper `toAbsoluteUrl()` untuk konversi relative path gambar ke absolute URL (wajib untuk OG image).
+
 ### Changed
+- **Migrasi pendekatan dynamic metadata: runtime JS → Cloudflare Pages Function (SSR).**
+  - Alasan: crawler sosial media (Facebook, WhatsApp, Twitter, Google, Discord, Telegram) **tidak mengeksekusi JavaScript**. Metadata yang di-inject via `game.js` setelah DOM load **tidak terbaca**.
+  - Solusi: CF Function intercept request `/game?slug=xxx` → fetch data → inject meta tags ke HTML → return ke crawler.
+- `game.html` `<head>` di-refactor: semua tag meta sekarang punya `property="og:..."` atau `name="twitter:..."` sebagai target replace.
+- `replaceMeta()` di CF Function di-refactor agar mempertahankan attribute `property`/`name` saat replace `content` (sebelumnya attribute ini hilang saat replace).
+- `og:image` sekarang di-set ke absolute URL secara otomatis via `toAbsoluteUrl()`.
+- `og:url` default di `game.html` di-set ke homepage, di-replace oleh CF Function dengan URL spesifik game saat request.
 - Mengganti nama project dari `Emulator Games ID` menjadi `EmuZone.ID`.
 - Mengganti URL website menjadi `https://emuzone.pages.dev/`.
 - Memperbarui branding website dan metadata terkait ke identitas `EmuZone`.
 - Mengganti favicon dan `og-image`.
 - Memperbarui nama, profile, deskripsi, dan format share pada channel.
 - Memperbarui status channel menjadi aktif kembali.
+
+### Fixed
+- Fixed `og:image` fallback ke `og-image.png` ketika game tidak punya `cover` maupun `banner`.
+- Fixed meta description (`<meta name="description">`) yang sebelumnya tidak ikut ter-replace oleh CF Function.
+- Fixed escaping title yang sebelumnya hanya escape `<` & `>` — sekarang pakai `escapeHtml()` lengkap (`&`, `"`, `<`, `>`).
+
+### Notes
+- **Arsitektur meta tags:**
+  - `game.html` = **template statis** dengan tag OG/Twitter default (punya `id` + `property`/`name`).
+  - CF Function = **injector** — replace `content` per request berdasarkan data Firestore.
+  - Crawler baca hasil akhir = meta tags sudah ter-personalisasi per game.
+- **Kenapa CF Function menang dibanding runtime JS:**
+  1. Crawler gak eksekusi JS.
+  2. SSR menjamin meta tags ada di HTML response pertama.
+  3. Cepat — Firestore query dilakuin server-side, gak nunggu client render.
 
 ## 2026-10-03
 
@@ -19,13 +50,14 @@
 
 ### Notes
 - Fokus rilis V1 adalah publish versi yang sudah stabil dan usable terlebih dahulu. Penyempurnaan OG image dan metadata sosial lanjutan dapat ditunda ke tahap berikutnya agar tidak menahan publikasi.
+- **⚠️ Superseded (2026-10-06):** Pendekatan dynamic metadata via runtime `game.js` **tidak berhasil** karena crawler (Facebook, WhatsApp, Twitter, Google) **tidak mengeksekusi JavaScript** saat membaca HTML. Digantikan oleh solusi Cloudflare Pages Functions (lihat entry 2026-10-06).
 
 ### Improved
 - Peningkatan pada pengaturan metadata sosial `game.html` dan penanganan URL kanonik.
 - Halaman game sekarang menggunakan cover game terlebih dahulu, kemudian banner, untuk `og:image` dan gambar Twitter.
 - Menambahkan validasi gambar saat runtime dengan fallback ke gambar OG utama ketika cover/banner hilang atau tidak valid.
 - Tautan game yang tidak valid atau hilang sekarang mengatur ulang metadata sosial ke gambar fallback utama.
-
+- 
 ## 2026-09-18
 
 ### Added
