@@ -84,11 +84,18 @@ export async function onRequestGet(context) {
         return `Download ${t}. Tersedia ROM dan file pendukung di EmuZone.`;
     }
 
-    function replaceMeta(id, content, extraAttrs) {
-        const escaped = escapeHtml(content);
-        const regex = new RegExp(`<meta\\s+[^>]*id=["']${id}["'][^>]*>`, "i");
-        const attrs = extraAttrs ? ` ${extraAttrs}` : "";
-        html = html.replace(regex, `<meta${attrs} id="${id}" content="${escaped}">`);
+    function replaceMeta(id, content) {
+    const escaped = escapeHtml(content);
+
+    const regex = new RegExp(
+        `(<meta\\s+[^>]*id=["']${id}["'][^>]*\\scontent=["'])[^"]*(["'])`,
+        "i"
+    );
+
+    html = html.replace(
+        regex,
+        `$1${escaped}$2`
+    );
     }
 
     // ============================================================
@@ -105,21 +112,31 @@ export async function onRequestGet(context) {
     // ============================================================
     // REPLACE META
     // ============================================================
-    replaceMeta("metaDesc", description, 'name="description"');
+    replaceMeta("metaDesc", description);
 
-    replaceMeta("ogTitle", title,       'property="og:title"');
-    replaceMeta("ogDesc",  description, 'property="og:description"');
-    replaceMeta("ogImage", image,       'property="og:image"');
-    replaceMeta("ogUrl",   canonical,   'property="og:url"');
+    replaceMeta("ogTitle", title);
+    replaceMeta("ogDesc", description);
+    replaceMeta("ogImage", image);
+    replaceMeta("ogUrl", canonical);
 
-    replaceMeta("twTitle", title,       'name="twitter:title"');
-    replaceMeta("twDesc",  description, 'name="twitter:description"');
-    replaceMeta("twImage", image,       'name="twitter:image"');
+    replaceMeta("twTitle", title);
+    replaceMeta("twDesc", description);
+    replaceMeta("twImage", image);
+
+    html = html.replace(
+         /<meta\s+property="og:image:alt"[^>]*>/i,
+         `<meta property="og:image:alt" content="${escapeHtml(title)} cover">`
+    );
+
+    html = html.replace(
+         /<meta\s+name="twitter:image:alt"[^>]*>/i,
+         `<meta name="twitter:image:alt" content="${escapeHtml(title)} cover">`
+    );
 
     // Canonical link
     html = html.replace(
-        /<link\s+[^>]*id=["']canonicalUrl["'][^>]*>/i,
-        `<link id="canonicalUrl" rel="canonical" href="${canonical}">`
+         /<link\s+[^>]*id=["']canonicalUrl["'][^>]*>/i,
+         `<link id="canonicalUrl" rel="canonical" href="${escapeHtml(canonical)}">`
     );
 
     // Title
