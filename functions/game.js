@@ -54,7 +54,8 @@ export async function onRequestGet(context) {
                     slug: fields.slug?.stringValue || "",
                     cover: fields.cover?.stringValue || "",
                     banner: fields.banner?.stringValue || "",
-                    description: fields.description?.stringValue || ""
+                    console: fields.console?.stringValue || "",
+                    emulator: fields.emulator?.stringValue || ""
                 };
             }
         }
@@ -84,9 +85,23 @@ export async function onRequestGet(context) {
         game.banner ||
         fallbackImage;
 
-    const description =
-        game.description ||
-        "Koleksi game emulator klasik dari EmuZone.";
+    function generateOgDescription(game) {
+        const title = game.title || "";
+        const consoleName = game.console || "";
+        const emulator = game.emulator || "";
+
+        if (consoleName && emulator) {
+            return `Download ${title} untuk ${consoleName}. Playable via ${emulator}. ROM, firmware, dan file pendukung tersedia di EmuZone.`;
+        }
+
+        if (consoleName) {
+            return `Download ${title} untuk ${consoleName}. Tersedia ROM dan file pendukung di EmuZone.`;
+        }
+
+        return `Download ${title}. Tersedia ROM dan file pendukung di EmuZone.`;
+    }
+
+    const description = generateOgDescription(game);
 
     const canonical =
         "https://emuzone.pages.dev/game?slug=" +
