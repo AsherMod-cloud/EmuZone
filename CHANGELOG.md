@@ -1,5 +1,65 @@
 # Changelog
 
+## 2026-10-09
+
+### Added
+- **Load More pagination** pada katalog beranda:
+  - Batch pertama ambil 15 game dari Firestore.
+  - Tombol **↓ Load More (N lagi)** muncul di bawah grid, N = sisa game yang belum ke-load.
+  - Setiap klik mengambil 15 game berikutnya via `startAfter(lastVisibleDoc)`.
+  - Tombol **otomatis hilang** kalau batch terakhir berisi kurang dari 15 game.
+- **Rocket scroll-to-top button** di kanan bawah:
+  - Muncul otomatis saat user scroll > 400px.
+  - Animasi roket meluncur ke atas + lidah api (flame trail) selama ~900ms.
+  - Smooth scroll bareng dengan animasi roket.
+  - Tombol hilang otomatis setelah scroll ke atas.
+- **`getGamesCount()` via Firestore REST API** (`runAggregationQuery`):
+  - Menghitung total game tanpa membaca dokumen (1 read operation).
+  - Digunakan untuk badge "Total Games" di header + label sisa game di tombol Load More.
+  - Dipilih karena `gamesRef.count()` **tidak tersedia** di Firebase compat SDK v10.12.2 yang dipakai.
+
+### Changed
+- `loadInitialData()` sekarang jalan secara paralel: `Promise.all([getGamesCount(), fetchPage()])` — count + data diambil sekaligus, biar load awal gak nunggu dua kali.
+- Tombol Load More dipindah dari **di dalam grid** ke **elemen statis di luar grid**:
+  - Sebelumnya tombol di-recreate setiap `renderGrid()` — rawan duplikasi listener.
+  - Sekarang tombol cuma dibuat sekali seumur halaman, hanya visibility & label yang di-update via `updateLoadMoreButton()`.
+- Event listener Load More di-attach **sekali seumur halaman**, gak lagi di dalam `renderGrid()`.
+
+### Fixed
+- Fixed tombol Load More yang **nyangkut di state "Memuat..."** saat pertama kali halaman dibuka:
+  - Akar masalah: `renderGrid()` dipanggil **sebelum** `isLoading = false`, jadi `updateLoadMoreButton()` melihat `isLoading` masih `true` dan men-disable tombol selamanya.
+  - Solusi: pindahkan `renderGrid()` ke dalam blok `finally`, **setelah** `isLoading = false`.
+- Fixed Load More yang **auto-trigger tanpa user klik**: ditambahkan guard `if (!e.isTrusted) return;` pada listener tombol, plus cek state `isLoading` / `hasMore` / `lastVisibleDoc` di awal `loadMore()`.
+- Fixed duplikasi `<main>` dan `<div id="grid">` di `index.html` — disatukan jadi satu `<main>` dengan grid + Load More wrap.
+- Fixed edge case pagination ketika total game tepat kelipatan `PAGE_SIZE` — tombol Load More sekarang hilang tepat setelah batch terakhir.
+- Fixed `getGamesCount()` yang return `0` saat gagal — sekarang return `null`, sehingga `totalCount` bisa dibedakan antara "0 game valid" vs "count gagal". Fallback: pakai batch-based `hasMore` (`snap.docs.length === PAGE_SIZE`) tanpa klaim total yang keliru.
+
+### Notes
+
+#### 🐛 Bug yang masih ada
+- **Kategori/chip console gak konsisten dengan pagination:**
+  - Chip di-generate dari `allGames` (data yang udah ke-load), bukan dari seluruh database.
+  - Akibat: console baru (mis. PS3) **belum muncul di chip** sampai user klik Load More beberapa kali.
+  - Akibat turunan: user yang pilih console X bisa lihat hasil kosong, padahal ada game console X yang belum ke-load.
+- **Chip row overflow:** chip pertama ("SEMUA") bisa kepotong di sisi kiri karena padding container kurang.
+- **Filter + Search cuma jalan di game yang udah ke-load:**
+  - Kalau user search "Mario" tapi Mario belum ke-load, gak akan muncul.
+  - Ini trade-off dari pagination — bisa di-improve nanti dengan server-side search.
+- **Real-time updates hilang:** `onSnapshot` diganti `get()`, jadi game baru gak muncul otomatis di katalog user. Untuk sekarang, refresh manual dianggap cukup.
+
+#### 💡 Ide / Rencana Perbaikan
+1. **Hardcode `CONSOLE_LIST`** dengan urutan custom (PS1, PS2, PS3, PSP, Vita, NDS, Wii, GBC, dst — bukan alfabet). Chip jadi selalu tampil semua console yang didukung, terlepas dari pagination.
+2. **Fix chip row padding** biar chip "SEMUA" gak kepotong.
+3. **Server-side search:**
+   - Prefix search via `where("title_lowercase", ">=", q)` + `where("title_lowercase", "<=", q + "\uf8ff")`.
+   - Perlu backfill `title_lowercase` di game lama + tambah field ini di `editor.js`.
+   - Perlu composite index di Firebase Console untuk kombinasi `title_lowercase` + `console`.
+   - Search mode punya pagination sendiri: 20 per page (bedain sama home yang 15).
+   - Debounce 300ms di input search biar gak query tiap ketikan.
+4. **User preference PAGE_SIZE:** setting buat user pilih 12 / 15 / 18 per page, disimpen di `localStorage`.
+5. **Tombol Refresh manual** khusus admin di header, buat narik game baru tanpa reload halaman.
+6. **Alarm reminder:** jangan kelamaan implement — target akhir Oktober 2026.
+
 ## 2026-10-06
 
 ### Added
@@ -57,7 +117,7 @@
 - Halaman game sekarang menggunakan cover game terlebih dahulu, kemudian banner, untuk `og:image` dan gambar Twitter.
 - Menambahkan validasi gambar saat runtime dengan fallback ke gambar OG utama ketika cover/banner hilang atau tidak valid.
 - Tautan game yang tidak valid atau hilang sekarang mengatur ulang metadata sosial ke gambar fallback utama.
-- 
+  
 ## 2026-09-18
 
 ### Added
