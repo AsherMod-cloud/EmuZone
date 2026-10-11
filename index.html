@@ -7,17 +7,17 @@
 <meta name="description" content="Temukan game emulator klasik NES, SNES, PS1, GBA, PSP, dan konsol lainnya. Koleksi game, screenshot, emulator, dan resource dalam satu tempat.">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#1c1b1f">
-<link rel="canonical" href="https://emuzone.pages.dev/">
+<link rel="canonical" href="https://emuzone.my.id/">
 <meta property="og:title" content="EmuZone — Ambil, Mainkan, Nostalgia">
 <meta property="og:description" content="Koleksi game emulator klasik, screenshot, emulator, dan resource dalam satu tempat.">
-<meta property="og:image" content="https://emuzone.pages.dev/assets/image/og-image.png">
-<meta property="og:url" content="https://emuzone.pages.dev/">
+<meta property="og:image" content="https://emuzone.my.id/assets/image/og-image.png">
+<meta property="og:url" content="https://emuzone.my.id/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="EmuZone">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="EmuZone — Ambil, Mainkan, Nostalgia">
 <meta name="twitter:description" content="Koleksi game emulator klasik, screenshot, emulator, dan resource dalam satu tempat.">
-<meta name="twitter:image" content="https://emuzone.pages.dev/assets/image/og-image.png">
+<meta name="twitter:image" content="https://emuzone.my.id/assets/image/og-image.png">
 <link rel="icon" href="assets/image/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@
 <body>
 
 <header>
-  <div class="logo">EmuZone<span>.</span>ID</div>
+  <div class="logo">EmuZone<span>.</span>MY<span>.</span>ID</div>
 
   <!-- Badge dipisah keluar, jadi dia di kiri -->
   <div class="stat-badge" id="totalGamesBadge" style="display:none;">
@@ -81,10 +81,21 @@
   </div>
 </section>
 
-<div class="toolbar">
-  <input id="search" type="text" placeholder="Cari judul game...">
-  <div id="chipRow" class="chip-row"></div>
-</div>
+
+<form class="search-form" action="search.html" method="GET">
+    <input
+        id="search"
+        type="search"
+        name="q"
+        placeholder="Cari judul game..."
+        autocomplete="off"
+        required
+    >
+    <button type="submit">CARI</button>
+</form>
+
+<div id="chipRow" class="chip-row"></div>
+
 
 <main>
   <div class="grid" id="grid"></div>

@@ -142,15 +142,17 @@
   #search:focus{outline:2px solid var(--amber); outline-offset:1px;}
 
   /* Baris Chip (Kategori) */
-  .chip-row{
-    display:flex;
-    gap:10px;
-    flex-wrap:nowrap; /* GAK AKAN TURUN KE BAWAH */
-    overflow-x:auto; /* BISA DIGESER KESAMPING */
-    max-width:100%;
-    padding-bottom:4px; /* Biar gak nabrak scrollbar */
-    scrollbar-width:none; /* Firefox */
-    -ms-overflow-style: none;  /* IE & Edge */
+  .chip-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    max-width: 100%;
+    padding-bottom: 12px;
+    padding-left: 17px;              /* ⬅️ TAMBAH — biar chip "SEMUA" gak kepotong */
+    scroll-padding-left: 4px;       /* ⬅️ TAMBAH — snap padding buat scroll */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
   .chip-row::-webkit-scrollbar {
     display: none; /* Chrome & Safari */
@@ -162,7 +164,7 @@
     border:1px solid var(--line);
     color:var(--ink-dim);
     padding:10px 14px;
-    border-radius:2px;
+    border-radius:10px;
     font-family:'JetBrains Mono', monospace;
     font-size:12px;
     cursor:pointer;
@@ -541,4 +543,40 @@ body.modal-open{
 .load-more-count{
   color: var(--amber);
   font-weight: 700;
+}
+/* ---- Shared search form ---- */
+.search-form{
+  width:min(1100px, calc(100% - 32px));
+  margin:0 auto 18px;
+  display:flex;
+  gap:8px;
+}
+.search-form button{
+  flex:0 0 auto;
+  min-width:100px;
+  border:1px solid var(--line);
+  border-radius:2px;
+  background:var(--bg-raised);
+  color:var(--amber);
+  padding:0 16px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.5px;
+  cursor:pointer;
+  transition:color .18s ease,border-color .18s ease,background .18s ease,transform .18s ease;
+}
+.search-form button:hover{
+  color:var(--ink);
+  border-color:var(--amber);
+  background:rgba(201,154,62,.08);
+  transform:translateY(-1px);
+}
+.search-form button:focus-visible{
+  outline:2px solid var(--amber);
+  outline-offset:2px;
+}
+@media (max-width:540px){
+  .search-form{width:calc(100% - 24px);gap:6px;}
+  .search-form button{min-width:82px;padding:0 11px;}
 }

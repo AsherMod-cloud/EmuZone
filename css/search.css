@@ -1,0 +1,191 @@
+/* Search page — aligned with EmuZone outlined theme */
+.search-logo {
+    color: inherit;
+    text-decoration: none;
+}
+
+.search-page {
+    width: min(1100px, calc(99% - 30px));
+    margin: 0 auto;
+    padding: clamp(29px, 5vw, 65px) 0 69px;
+}
+
+.search-heading {
+    max-width: 760px;
+    margin-bottom: 26px;
+}
+
+.search-heading .eyebrow {
+    color: var(--amber);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 1.8px;
+    margin-bottom: 14px;
+}
+
+.search-heading h1 {
+    font-family: "Press Start 2P", monospace;
+    font-size: clamp(20px, 4vw, 34px);
+    line-height: 1.44;
+    margin: 0 0 12px;
+    overflow-wrap: anywhere;
+}
+
+.search-heading p {
+    color: var(--ink-dim);
+    margin: 0;
+    line-height: 1.5;
+    font-size: 13px;
+}
+
+.search-form {
+    display: flex;
+    align-items: stretch;
+    gap: 7px;
+    margin: 0 0 19px;
+}
+
+.search-form input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 14px;
+    border-radius: 2px;
+    border: 0.1px solid var(--line);
+    background: var(--bg-raised);
+    color: var(--ink);
+    font: inherit;
+    outline: none;
+    transition: border-color .12s ease, box-shadow .15s ease, background .13s ease;
+}
+
+.search-form input::placeholder {
+    color: var(--ink-dim);
+    font: 500;
+    opacity: .7;
+}
+
+.search-form input:focus {
+    border-color: var(--amber);
+    box-shadow: 0 0 0 2px rgba(201, 154, 62, .12);
+    background: var(--card);
+}
+
+
+.search-pagination button {
+    border: 1px solid var(--line);
+    border-radius: 200px;
+    background: var(--bg-raised);
+    color: var(--ink);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: color .15s ease, border-color .15s ease, background .15s ease, transform .18s ease;
+}
+
+.search-form button {
+    min-width: 155px;
+    padding: 0 18px;
+    color: var(--amber);
+    letter-spacing: .9px;
+}
+
+.search-form button:hover,
+.search-pagination button:not(:disabled):hover {
+    color: var(--ink);
+    border-color: var(--amber);
+    background: rgba(201, 154, 62, .08);
+    transform: translateY(-1px);
+}
+
+.search-form button:focus-visible,
+.search-pagination button:focus-visible {
+    outline: 3px solid var(--amber);
+    outline-offset: 4px;
+}
+
+.search-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    min-height: 23px;
+    margin: 19px 0;
+    color: var(--ink-dim);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+}
+
+.search-info #resultInfo {
+    color: var(--ink);
+}
+
+.search-page .grid {
+    margin-top: 5;
+}
+
+.search-page .empty {
+    grid-column: 1 / -1;
+    border: 1px dashed var(--line);
+    background: rgba(36, 34, 41, .45);
+}
+
+.search-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 30px;
+}
+
+.search-pagination button {
+    padding: 10px 15px;
+    font-size: 12px;
+}
+
+.search-pagination button:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+}
+
+.search-pagination span {
+    color: var(--ink-dim);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 15px;
+}
+
+.search-back {
+    display: inline-flex;
+    margin-bottom: 26px;
+    color: var(--ink-dim);
+    text-decoration: none;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 15px;
+    transition: color .18s ease;
+}
+
+.search-back:hover {
+    color: var(--amber);
+}
+
+@media (max-width: 540px) {
+    .search-page {
+        width: min(100% - 25px, 1150px);
+        padding-top: 29px;
+    }
+
+    .search-form {
+        gap: 9px;
+    }
+
+    .search-form input {
+        padding: 12px 11px;
+        font-size: 13px;
+    }
+
+    .search-form button {
+        min-width: 84px;
+        padding: 0 12px;
+        font-size: 15px;
+    }
+}

@@ -7,13 +7,262 @@ function checkAdminHash(){
 checkAdminHash();
 window.addEventListener("hashchange", checkAdminHash);
 
+// ---------- Console Registry ----------
+// Sumber kebenaran buat chip kategori.
+// Tambah console baru = tinggal tambah entry di sini.
+// `active: false` = sembunyiin dari chip
+// (console gak siap / coming soon).
+
+const CONSOLE_LIST = [
+    // ---------- PlayStation ----------
+    { name: "PS1",                  active: true },
+    { name: "PS2",                  active: true },
+    { name: "PS3",                  active: true },
+    { name: "PSP",                  active: true },
+    { name: "PS Vita",              active: true },
+
+    // ---------- Nintendo ----------
+    { name: "NES",                  active: true },
+    { name: "SNES",                 active: true },
+    { name: "Game Boy",             active: true },
+    { name: "Game Boy Color",       active: true },
+    { name: "Game Boy Advance",     active: true },
+    { name: "Nintendo DS",          active: true },
+    { name: "Nintendo 3DS",         active: true },
+    { name: "Nintendo 64",          active: true },
+    { name: "GameCube",             active: true },
+    { name: "Wii",                  active: true },
+    { name: "Wii U",                active: true },
+    { name: "Nintendo Switch",      active: true },
+
+    // ---------- SEGA ----------
+    { name: "Master System",        active: true },
+    { name: "Game Gear",            active: true },
+    { name: "Mega Drive / Genesis", active: true },
+    { name: "Sega Saturn",          active: true },
+    { name: "Dreamcast",            active: true },
+
+    // ---------- Arcade ----------
+    { name: "Arcade",               active: true },
+    { name: "Neo Geo",              active: true },
+
+    // ---------- Other Platforms ----------
+    { name: "Gamehub",              active: true },
+    { name: "Joiplay",              active: true },
+    { name: "PC",                   active: true },
+    { name: "Android",              active: true },
+
+    // Belum memiliki konfigurasi emulator khusus
+    { name: "Other",                active: false }
+];
+
 // ---------- Helpers ----------
 const CONSOLE_COLORS = ["var(--red)","var(--purple)","var(--blue)","var(--amber)","var(--green)"];
 function colorFor(consoleName){
     let hash = 0;
-    for(const ch of consoleName) hash = (hash * 31 + ch.charCodeAt(0)) % CONSOLE_COLORS.length;
+    for(const ch of String(consoleName || "Lainnya")) hash = (hash * 31 + ch.charCodeAt(0)) % CONSOLE_COLORS.length;
     return CONSOLE_COLORS[hash];
 }
+
+function normalizeConsoleName(value) {
+    return String(value || "").normalize("NFKC").trim().toLocaleLowerCase("id-ID");
+}
+
+const CONSOLE_LOOKUP = new Map(
+    CONSOLE_LIST.map(consoleItem => [normalizeConsoleName(consoleItem.name), consoleItem.name])
+);
+
+function canonicalConsoleName(value) {
+    const normalized = normalizeConsoleName(value);
+    return CONSOLE_LOOKUP.get(normalized) || String(value || "").trim();
+}
+
+function escapeHtml(str) {
+    return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// ---------- Search Index Helpers ----------
+
+function normalizeSearchText(value) {
+    return String(value || "")
+        .normalize("NFKC")
+        .toLocaleLowerCase("id-ID")
+        .trim();
+}
+
+function generateTitleWords(title) {
+    return [
+        ...new Set(
+            normalizeSearchText(title)
+                .split(/[^\p{L}\p{N}]+/u)
+                .filter(Boolean)
+        )
+    ];
+}
+
+function generateTitleSubstrings(title, minLength = 2) {
+    const words = generateTitleWords(title);
+    const substrings = new Set();
+
+    for (const word of words) {
+        const chars = Array.from(word);
+
+        for (let start = 0; start < chars.length; start++) {
+            for (
+                let end = start + minLength;
+                end <= chars.length;
+                end++
+            ) {
+                substrings.add(
+                    chars.slice(start, end).join("")
+                );
+            }
+        }
+    }
+
+    return [...substrings];
+}
+
+function buildGameSearchFields(title) {
+    return {
+        title_words: generateTitleWords(title),
+        title_substrings: generateTitleSubstrings(title)
+    };
+}
+
+// Bisa dipakai oleh script admin untuk menyimpan indeks pencarian.
+window.generateTitleWords = generateTitleWords;
+window.generateTitleSubstrings = generateTitleSubstrings;
+window.buildGameSearchFields = buildGameSearchFields;
+
+
+// ---------- Backfill Search Index ----------
+
+async function backfillGameTitleSubstrings() {
+    if (!isAdmin) {
+        alert("Login admin terlebih dahulu.");
+        return;
+    }
+
+    const confirmed = window.confirm(
+        "Buat indeks pencarian untuk semua game di Firestore?"
+    );
+
+    if (!confirmed) return;
+
+    const BATCH_SIZE = 400;
+
+    let lastDoc = null;
+    let scanned = 0;
+    let updated = 0;
+
+    try {
+        while (true) {
+            let query = gamesRef
+                .orderBy(firebase.firestore.FieldPath.documentId())
+                .limit(BATCH_SIZE);
+
+            if (lastDoc) {
+                query = query.startAfter(lastDoc);
+            }
+
+            const snapshot = await query.get();
+
+            if (snapshot.empty) break;
+
+            const batch = gamesRef.firestore.batch();
+            let batchUpdates = 0;
+
+            for (const doc of snapshot.docs) {
+                scanned++;
+
+                const data = doc.data();
+                const fields = buildGameSearchFields(data.title);
+
+                const oldWords = Array.isArray(data.title_words)
+                    ? data.title_words
+                    : [];
+
+                const oldSubstrings = Array.isArray(
+                    data.title_substrings
+                )
+                    ? data.title_substrings
+                    : [];
+
+                const wordsMatch =
+                    oldWords.length === fields.title_words.length &&
+                    oldWords.every(
+                        (value, index) =>
+                            value === fields.title_words[index]
+                    );
+
+                const substringsMatch =
+                    oldSubstrings.length ===
+                        fields.title_substrings.length &&
+                    oldSubstrings.every(
+                        (value, index) =>
+                            value === fields.title_substrings[index]
+                    );
+
+                if (wordsMatch && substringsMatch) continue;
+
+                batch.update(doc.ref, {
+                    title_words: fields.title_words,
+                    title_substrings: fields.title_substrings
+                });
+
+                batchUpdates++;
+            }
+
+            if (batchUpdates > 0) {
+                await batch.commit();
+                updated += batchUpdates;
+            }
+
+            lastDoc = snapshot.docs[snapshot.docs.length - 1];
+
+            console.info(
+                `Backfill: diperiksa ${scanned}, diperbarui ${updated}`
+            );
+
+            if (snapshot.docs.length < BATCH_SIZE) break;
+        }
+
+        alert(
+            "Backfill selesai!\n" +
+            `Game diperiksa: ${scanned}\n` +
+            `Game diperbarui: ${updated}`
+        );
+
+        return {
+            completed: true,
+            scanned,
+            updated
+        };
+    } catch (error) {
+        console.error("Backfill gagal:", error);
+
+        alert(
+            "Backfill gagal. Periksa console untuk detail error.\n" +
+            error.message
+        );
+
+        return {
+            completed: false,
+            scanned,
+            updated,
+            error: error.message
+        };
+    }
+}
+
+window.backfillGameTitleSubstrings =
+    backfillGameTitleSubstrings;
 
 // ---------- State ----------
 let allGames = [];
@@ -21,10 +270,16 @@ let activeConsole = "all";
 let isAdmin = false;
 
 const PAGE_SIZE = 15;
+
 let lastVisibleDoc = null;
-let totalCount = 0;
+// Jumlah semua game dalam katalog
+let catalogTotalCount = null;
+
+// Jumlah game untuk filter yang sedang aktif
+let activeTotalCount = null;
 let hasMore = false;
 let isLoading = false;
+let queryVersion = 0;
 
 // ---------- DOM ----------
 const addBtn = document.getElementById("addBtn");
@@ -42,10 +297,14 @@ const loadMoreLabel = loadMoreBtn.querySelector(".load-more-label");
 
 logoutLink.addEventListener("click", logout);
 
-function updateTotalGamesStat(){
-    // Kalau count valid, tampil total. Kalau gak, tampil jumlah yang ke-load.
-    const display = (totalCount !== null) ? totalCount : allGames.length;
-    totalGamesCount.textContent = display;
+function updateTotalGamesStat() {
+    if (catalogTotalCount !== null) {
+        totalGamesCount.textContent = catalogTotalCount;
+    } else if (activeConsole === "all") {
+        totalGamesCount.textContent = allGames.length;
+    } else {
+        totalGamesCount.textContent = "—";
+    }
 }
 
 // ---------- Auth state ----------
@@ -64,9 +323,25 @@ onAdminStateChanged((loggedIn) => {
 });
 
 // ---------- Get total count via Firestore REST API ----------
-async function getGamesCount() {
+async function getGamesCount(consoleName = "all") {
     const projectId = "emulator-games-id-bf695";
-    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runAggregationQuery`;
+    const url =
+        `https://firestore.googleapis.com/v1/projects/${projectId}` +
+        `/databases/(default)/documents:runAggregationQuery`;
+
+    const structuredQuery = {
+        from: [{ collectionId: "games" }]
+    };
+
+    if (consoleName !== "all") {
+        structuredQuery.where = {
+            fieldFilter: {
+                field: { fieldPath: "console" },
+                op: "EQUAL",
+                value: { stringValue: consoleName }
+            }
+        };
+    }
 
     try {
         const res = await fetch(url, {
@@ -74,121 +349,157 @@ async function getGamesCount() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 structuredAggregationQuery: {
-                    structuredQuery: {
-                        from: [{ collectionId: "games" }]
-                    },
-                    aggregations: [{ alias: "total", count: {} }]
+                    structuredQuery,
+                    aggregations: [
+                        { alias: "total", count: {} }
+                    ]
                 }
             })
         });
 
         if (!res.ok) {
             console.warn("Count REST gagal:", res.status);
-            return null;  // ⬅️ NULL = gagal, bukan 0
+            return null;
         }
 
         const data = await res.json();
         const raw = data[0]?.result?.aggregateFields?.total?.integerValue;
-        
-        if (raw === undefined) {
-            console.warn("Count response format tidak terduga:", data);
-            return null;
-        }
-        
-        return parseInt(raw, 10);
+
+        return raw === undefined ? null : parseInt(raw, 10);
     } catch (err) {
         console.warn("Count REST error:", err);
-        return null;  // ⬅️ NULL = gagal
+        return null;
     }
 }
 
-// ---------- Load data (paginated) ----------
-async function loadInitialData(){
-    if (isLoading) return;
-    isLoading = true;
-    grid.innerHTML = `<div class="empty">Memuat game...</div>`;
+// ---------- Build Firestore query ----------
+function buildGamesQuery(consoleName = activeConsole) {
+    let query = gamesRef;
 
-    let success = false;
+    if (consoleName !== "all") {
+        query = query.where("console", "==", canonicalConsoleName(consoleName));
+    }
+
+    return query.orderBy("createdAt", "desc");
+}
+
+// ---------- Load data for active console ----------
+async function loadInitialData() {
+    const version = ++queryVersion;
+    const consoleName = activeConsole;
+
+    isLoading = true;
+    allGames = [];
+    lastVisibleDoc = null;
+    catalogTotalCount = null;
+    activeTotalCount = null;
+    hasMore = false;
+
+    grid.innerHTML = `<div class="empty">Memuat game...</div>`;
+    updateTotalGamesStat();
+    updateLoadMoreButton();
 
     try {
-        const [countResult, snap] = await Promise.all([
-            getGamesCount(),
-            gamesRef.orderBy("createdAt", "desc").limit(PAGE_SIZE).get()
+        const [catalogCount, filteredCount, snap] = await Promise.all([
+            getGamesCount("all"),
+            getGamesCount(consoleName),
+            buildGamesQuery(consoleName).limit(PAGE_SIZE).get()
         ]);
 
-        allGames = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        // Abaikan hasil dari filter yang sudah tidak aktif.
+        if (version !== queryVersion) return;
+
+        allGames = snap.docs.map(d => ({
+            id: d.id,
+            ...d.data()
+        }));
+
         lastVisibleDoc = snap.docs[snap.docs.length - 1] || null;
 
-        // ⬇️ Bedain: count valid vs count gagal
-        if (countResult !== null) {
-            totalCount = countResult;                    // count valid
-            hasMore = allGames.length < totalCount;      // akurat!
+        catalogTotalCount = catalogCount;
+        activeTotalCount = filteredCount;
+
+        // Pagination mengikuti jumlah game pada filter aktif.
+        if (activeTotalCount !== null) {
+            hasMore = allGames.length < activeTotalCount;
         } else {
-            totalCount = null;                           // count gagal
-            hasMore = snap.docs.length === PAGE_SIZE;    // fallback: cek batch penuh
+            hasMore = snap.docs.length === PAGE_SIZE;
         }
 
         updateTotalGamesStat();
         renderChips();
-        success = true;
+
     } catch (err) {
-        grid.innerHTML = `<div class="empty">Gagal konek ke database.<br><span style="opacity:.6">${err.message}</span></div>`;
+        if (version !== queryVersion) return;
+
+        console.error("Load data gagal:", err);
+        grid.innerHTML =
+            `<div class="empty">Gagal konek ke database.<br>` +
+            `<span style="opacity:.6">${escapeHtml(err.message)}</span></div>`;
+
     } finally {
-        isLoading = false;
-        if (success) renderGrid();
+        if (version === queryVersion) {
+            isLoading = false;
+            renderGrid();
+        }
     }
 }
 
-async function loadMore(){
+// ---------- Load more for active console ----------
+async function loadMore() {
     if (isLoading || !hasMore || !lastVisibleDoc) return;
 
+    const version = queryVersion;
+    const consoleName = activeConsole;
+
     isLoading = true;
-    loadMoreBtn.disabled = true;
-    loadMoreLabel.textContent = "Memuat...";
-    loadMoreCount.textContent = "";
+    updateLoadMoreButton();
 
     try {
-        const snap = await gamesRef
-            .orderBy("createdAt", "desc")
+        let query = buildGamesQuery(consoleName)
             .startAfter(lastVisibleDoc)
-            .limit(PAGE_SIZE)
-            .get();
+            .limit(PAGE_SIZE);
 
-        const newGames = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const snap = await query.get();
+
+        // Jangan campurkan hasil dari konsol sebelumnya.
+        if (version !== queryVersion) return;
+
+        const newGames = snap.docs.map(d => ({
+            id: d.id,
+            ...d.data()
+        }));
+
         allGames = allGames.concat(newGames);
 
         if (snap.docs.length > 0) {
             lastVisibleDoc = snap.docs[snap.docs.length - 1];
         }
 
-        // ⬇️ Update hasMore dengan logika yang bener
-        if (totalCount !== null) {
-            // Count valid: hasMore = masih ada sisa
-            hasMore = allGames.length < totalCount;
+        if (activeTotalCount !== null) {
+            hasMore = allGames.length < activeTotalCount;
         } else {
-            // Count gagal: fallback ke batch-based
             hasMore = snap.docs.length === PAGE_SIZE;
         }
-
-        updateTotalGamesStat();
-        renderChips();
     } catch (err) {
-        console.error("Load more gagal:", err);
+        if (version === queryVersion) {
+            console.error("Load more gagal:", err);
+        }
     } finally {
-        isLoading = false;
-        renderGrid();
+        if (version === queryVersion) {
+            isLoading = false;
+            renderGrid();
+        }
     }
 }
-
 // ---------- Load More event listener (attach SEKALI) ----------
 loadMoreBtn.addEventListener("click", (e) => {
     if (!e.isTrusted) return;  // cuma respon click user asli
     loadMore();
 });
 
-// ---------- Chips ----------  
+// ---------- Chips (dari CONSOLE_LIST, bukan allGames) ----------
 function renderChips(){
-    const consoles = [...new Set(allGames.map(g => g.console).filter(Boolean))].sort();
     chipRow.innerHTML = "";
 
     const makeChip = (label, value) => {
@@ -196,46 +507,72 @@ function renderChips(){
         b.className = "chip" + (activeConsole === value ? " active" : "");
         b.textContent = label;
         b.addEventListener("click", () => {
+            if (activeConsole === value) return;
+
             activeConsole = value;
             renderChips();
-            renderGrid();
-        });
+            loadInitialData();
+         });
         return b;
     };
 
     chipRow.appendChild(makeChip("SEMUA", "all"));
-    consoles.forEach(c => chipRow.appendChild(makeChip(c.toUpperCase(), c)));
+
+    const registered = new Set();
+    CONSOLE_LIST
+        .filter(c => c.active)
+        .forEach(c => {
+            registered.add(normalizeConsoleName(c.name));
+            chipRow.appendChild(makeChip(c.name.toUpperCase(), c.name));
+        });
+
+    // Jangan sembunyikan console yang sudah ada di Firestore tetapi belum masuk registry.
+    // Ini menjaga data tetap bisa difilter sambil registry dirapikan.
+    [...new Set(allGames.map(game => canonicalConsoleName(game.console)).filter(Boolean))]
+        .filter(name => !registered.has(normalizeConsoleName(name)))
+        .sort((a, b) => a.localeCompare(b, "id"))
+        .forEach(name => chipRow.appendChild(makeChip(name.toUpperCase(), name)));
 }
 
 // ---------- Grid (cuma render game, gak nyentuh tombol Load More) ----------
-search.addEventListener("input", renderGrid);
 
 function renderGrid(){
-    const q = search.value.trim().toLowerCase();
     const filtered = allGames.filter(g =>
-        (activeConsole === "all" || g.console === activeConsole) &&
-        (g.title || "").toLowerCase().includes(q)
+        activeConsole === "all" ||
+        normalizeConsoleName(g.console) === normalizeConsoleName(activeConsole)
     );
 
     grid.innerHTML = "";
 
     if (filtered.length === 0) {
-        const emptyMsg = allGames.length === 0
-            ? "Belum ada game di katalog."
-            : "Belum ada game yang cocok. Coba kata kunci lain, atau Load More.";
-        grid.innerHTML = `<div class="empty">${emptyMsg}</div>`;
+    let emptyMsg;
+
+    if (allGames.length === 0) {
+        emptyMsg = "Belum ada game di katalog.";
+    } else if (q) {
+        emptyMsg = `Belum ada game yang cocok dengan "<b>${escapeHtml(q)}</b>".`
+                 + `<br><span style="opacity:.6">Coba kata kunci lain, atau klik Load More.</span>`;
+    } else if (activeConsole !== "all") {
+        emptyMsg = `🎮 Game belum tersedia untuk konsol <b>${escapeHtml(activeConsole)}</b>.`
+                 + `<br><span style="opacity:.6">Konsol ini direncanakan — pantau terus ya!</span>`;
     } else {
+        emptyMsg = "Belum ada game yang cocok.";
+    }
+
+    grid.innerHTML = `<div class="empty">${emptyMsg}</div>`;
+  } else {
         filtered.forEach(g => {
-            const color = colorFor(g.console || "Lainnya");
+            const displayConsole = canonicalConsoleName(g.console) || "Lainnya";
+            const color = colorFor(displayConsole);
             const detailUrl = `game.html?slug=${encodeURIComponent(g.slug || g.id)}`;
             const card = document.createElement("div")
             card.className = "card";
             card.innerHTML = `
                 <div class="card-strip" style="background:${color}"></div>
                 <div class="card-body">
-                    <span class="tag" style="background:${color}">${g.console || "Lainnya"}</span>
-                    <h3>${g.title}</h3>
-                    <div class="meta"><span>${g.size || "-"}</span><span>siap main</span></div>
+                    <span class="tag" style="background:${color}">${escapeHtml(displayConsole)}</span>
+                    <h3>${escapeHtml(g.title || "Game tanpa judul")}</h3>
+                    <div class="meta"><span>${escapeHtml(g.size || "-")}</span><span>siap main</span></div>
                     <div class="card-actions">
                         <a class="btn primary" data-act="open" href="${detailUrl}">DOWNLOAD</a>
                     </div>
@@ -272,7 +609,7 @@ function renderGrid(){
     updateLoadMoreButton();
 }
 
-function updateLoadMoreButton(){
+function updateLoadMoreButton() {
     if (!hasMore) {
         loadMoreWrap.style.display = "none";
         return;
@@ -280,14 +617,22 @@ function updateLoadMoreButton(){
 
     loadMoreWrap.style.display = "flex";
     loadMoreBtn.disabled = isLoading;
-    loadMoreLabel.textContent = isLoading ? "Memuat..." : "↓ Load More";
+    loadMoreLabel.textContent = isLoading
+        ? "Memuat..."
+        : "↓ Load More";
 
-    // Cuma tampil angka sisa kalau totalCount valid
-    if (totalCount !== null) {
-        const remaining = totalCount - allGames.length;
-        loadMoreCount.textContent = (!isLoading && remaining > 0) ? `(${remaining} lagi)` : "";
+    if (activeTotalCount !== null) {
+        const remaining = Math.max(
+            0,
+            activeTotalCount - allGames.length
+        );
+
+        loadMoreCount.textContent =
+            !isLoading && remaining > 0
+                ? `(${remaining} lagi)`
+                : "";
     } else {
-        loadMoreCount.textContent = "";  // count gagal → gak nampilin angka
+        loadMoreCount.textContent = "";
     }
 }
 

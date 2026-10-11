@@ -1,8 +1,39 @@
 # Changelog
 
+## 2026-10-11
+
+### Added
+
+- Menambahkan halaman pencarian khusus **("search.html")** untuk mencari game.
+- Menambahkan fitur pencarian multi-kata kunci dengan urutan kata yang fleksibel.
+- Menambahkan fitur pencarian game berbasis Firestore menggunakan **"title_words"**.
+- Menambahkan **pagination** untuk hasil pencarian.
+- Menambahkan dukungan untuk pencarian game melalui parameter kueri URL **("?q=")**.
+- Menambahkan **navigation** langsung dari hasil pencarian ke halaman detail game.
+
+### Improved
+
+- CSS inline `search.html` telah diubah menjadi `css/search.css`.
+- JavaScript inline di `search.html` telah diubah menjadi `js/search.js`.
+- Tombol kirim di halaman beranda dan halaman pencarian telah didesain ulang agar sesuai dengan tema EmuZone yang tenang dan berdesain minimalis.
+- Penyelarasan spasi halaman pencarian, warna, batas, status fokus, penomoran halaman, status kosong, dan tata letak seluler dengan halaman beranda.
+- **Pemisahan tanggung jawab pencarian:** `index.html` sekarang hanya menjadi *pintu masuk* pencarian (form submit ke `search.html`), sedangkan logika pencarian sepenuhnya ditangani oleh `search.html` dan `js/search.js`.
+- Search bar di `index.html` tidak lagi melakukan filter live — hanya mengirim query via URL parameter saat form di-submit.
+
+### Fixed
+
+- Memperbaiki pemfilteran konsol dengan menormalisasi nama konsol dan menampilkan entri registri aktif serta konsol Firestore yang tidak dikenal.
+- Memperbaiki pencarian judul parsial dengan melakukan kueri `title_substrings` dengan fallback `title_words`.
+- Menambahkan dukungan pencarian slug di `search.html` di samping pencarian ID dokumen.
+- Memperbaiki permintaan pencarian yang tumpang tindih sehingga kueri lama yang lebih lambat tidak dapat menimpa hasil yang lebih baru.
+- Editor sekarang menyimpan dan memperbarui `title_words` dan `title_substrings` secara otomatis.
+- **Menghapus `search.addEventListener("input", renderGrid)`** di `script.js` — sebelumnya listener ini membuat `index.html` ikut melakukan filter live pada katalog, yang menyebabkan hasil pencarian bocor ke halaman beranda.
+- **Menghapus filter query (`normalizeSearchText(g.title).includes(q)`) di `renderGrid()`** — fungsi `renderGrid()` sekarang hanya bertanggung jawab untuk memfilter berdasarkan konsol yang aktif, bukan berdasarkan kata kunci pencarian. Ini mencegah duplikasi logika pencarian antara `index.html` dan `search.html`.
+
 ## 2026-10-09
 
 ### Added
+
 - **Load More pagination** pada katalog beranda:
   - Batch pertama ambil 15 game dari Firestore.
   - Tombol **↓ Load More (N lagi)** muncul di bawah grid, N = sisa game yang belum ke-load.
@@ -19,6 +50,7 @@
   - Dipilih karena `gamesRef.count()` **tidak tersedia** di Firebase compat SDK v10.12.2 yang dipakai.
 
 ### Changed
+
 - `loadInitialData()` sekarang jalan secara paralel: `Promise.all([getGamesCount(), fetchPage()])` — count + data diambil sekaligus, biar load awal gak nunggu dua kali.
 - Tombol Load More dipindah dari **di dalam grid** ke **elemen statis di luar grid**:
   - Sebelumnya tombol di-recreate setiap `renderGrid()` — rawan duplikasi listener.
@@ -26,6 +58,7 @@
 - Event listener Load More di-attach **sekali seumur halaman**, gak lagi di dalam `renderGrid()`.
 
 ### Fixed
+
 - Fixed tombol Load More yang **nyangkut di state "Memuat..."** saat pertama kali halaman dibuka:
   - Akar masalah: `renderGrid()` dipanggil **sebelum** `isLoading = false`, jadi `updateLoadMoreButton()` melihat `isLoading` masih `true` dan men-disable tombol selamanya.
   - Solusi: pindahkan `renderGrid()` ke dalam blok `finally`, **setelah** `isLoading = false`.
@@ -37,6 +70,7 @@
 ### Notes
 
 #### 🐛 Bug yang masih ada
+
 - **Kategori/chip console gak konsisten dengan pagination:**
   - Chip di-generate dari `allGames` (data yang udah ke-load), bukan dari seluruh database.
   - Akibat: console baru (mis. PS3) **belum muncul di chip** sampai user klik Load More beberapa kali.
@@ -48,6 +82,7 @@
 - **Real-time updates hilang:** `onSnapshot` diganti `get()`, jadi game baru gak muncul otomatis di katalog user. Untuk sekarang, refresh manual dianggap cukup.
 
 #### 💡 Ide / Rencana Perbaikan
+
 1. **Hardcode `CONSOLE_LIST`** dengan urutan custom (PS1, PS2, PS3, PSP, Vita, NDS, Wii, GBC, dst — bukan alfabet). Chip jadi selalu tampil semua console yang didukung, terlepas dari pagination.
 2. **Fix chip row padding** biar chip "SEMUA" gak kepotong.
 3. **Server-side search:**
@@ -63,6 +98,7 @@
 ## 2026-10-06
 
 ### Added
+
 - **Cloudflare Pages Function** (`functions/game.js`) untuk server-side rendering metadata sosial per game:
   - Fetch data game dari Firestore REST API berdasarkan `slug`.
   - Inject `og:title`, `og:description`, `og:image`, `og:url`, `twitter:title`, `twitter:description`, `twitter:image` langsung ke HTML sebelum dikirim ke client.
@@ -72,6 +108,7 @@
 - Helper `toAbsoluteUrl()` untuk konversi relative path gambar ke absolute URL (wajib untuk OG image).
 
 ### Changed
+
 - **Migrasi pendekatan dynamic metadata: runtime JS → Cloudflare Pages Function (SSR).**
   - Alasan: crawler sosial media (Facebook, WhatsApp, Twitter, Google, Discord, Telegram) **tidak mengeksekusi JavaScript**. Metadata yang di-inject via `game.js` setelah DOM load **tidak terbaca**.
   - Solusi: CF Function intercept request `/game?slug=xxx` → fetch data → inject meta tags ke HTML → return ke crawler.
@@ -87,11 +124,13 @@
 - Memperbarui status channel menjadi aktif kembali.
 
 ### Fixed
+
 - Fixed `og:image` fallback ke `og-image.png` ketika game tidak punya `cover` maupun `banner`.
 - Fixed meta description (`<meta name="description">`) yang sebelumnya tidak ikut ter-replace oleh CF Function.
 - Fixed escaping title yang sebelumnya hanya escape `<` & `>` — sekarang pakai `escapeHtml()` lengkap (`&`, `"`, `<`, `>`).
 
 ### Notes
+
 - **Arsitektur meta tags:**
   - `game.html` = **template statis** dengan tag OG/Twitter default (punya `id` + `property`/`name`).
   - CF Function = **injector** — replace `content` per request berdasarkan data Firestore.
@@ -104,15 +143,18 @@
 ## 2026-10-03
 
 ### Added
+
 - Menambahkan metadata SEO beranda, canonical URL, Open Graph, Twitter Card, dan tag warna tema.
 - Menambahkan gambar sosial cadangan khusus di `assets/image/og-image.png`.
 - Menambahkan modal selamat datang per sesi pada halaman beranda untuk menjelaskan tujuan dan status pengembangan project.
 
 ### Notes
+
 - Fokus rilis V1 adalah publish versi yang sudah stabil dan usable terlebih dahulu. Penyempurnaan OG image dan metadata sosial lanjutan dapat ditunda ke tahap berikutnya agar tidak menahan publikasi.
 - **⚠️ Superseded (2026-10-06):** Pendekatan dynamic metadata via runtime `game.js` **tidak berhasil** karena crawler (Facebook, WhatsApp, Twitter, Google) **tidak mengeksekusi JavaScript** saat membaca HTML. Digantikan oleh solusi Cloudflare Pages Functions (lihat entry 2026-10-06).
 
 ### Improved
+
 - Peningkatan pada pengaturan metadata sosial `game.html` dan penanganan URL kanonik.
 - Halaman game sekarang menggunakan cover game terlebih dahulu, kemudian banner, untuk `og:image` dan gambar Twitter.
 - Menambahkan validasi gambar saat runtime dengan fallback ke gambar OG utama ketika cover/banner hilang atau tidak valid.

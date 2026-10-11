@@ -327,6 +327,7 @@ requiredFields.forEach(id => {
 
   const data = {
   title,
+  ...buildGameSearchFields(title),
   console: consoleName,
   genre: document.getElementById("fGenre").value.trim(),
   publisher: document.getElementById("fPublisher").value.trim(),
