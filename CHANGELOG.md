@@ -1,5 +1,45 @@
 # Changelog
 
+## 2026-10-12
+
+### Added
+
+- **Dynamic SEO via Cloudflare Function** (`functions/game.js`):
+  - Upgrade dari *dynamic OG image* menjadi *dynamic SEO* penuh per game.
+  - **SEO Title** dengan format `{title} ROM ({console}) - Download on {emulator} | EmuZone` (auto-truncate jika kepanjangan).
+  - **SEO Description** data-driven: `Download {title} ROM untuk {console}. Playable di Android via {emulator}. Ukuran {size}, region {region}. Gratis & cepat di EmuZone.` — field kosong otomatis di-skip.
+  - **JSON-LD `VideoGame` schema** — mengirim metadata terstruktur (name, image, genre, developer, release date, rating, screenshots, price, availability) untuk memicu rich snippet di Google Search.
+  - **JSON-LD `BreadcrumbList` schema** — menampilkan breadcrumb (Home › Console › Game) di hasil pencarian.
+  - **Helper `stripMarkdown()`** — membersihkan deskripsi markdown dari Firestore menjadi plain text sebelum dikirim ke meta tags & JSON-LD.
+  - **Helper `escapeHtml()` & `toAbsoluteUrl()`** — reusable untuk semua injeksi meta & JSON-LD.
+  - Fetch field Firestore yang lebih lengkap: `genre`, `developer`, `publisher`, `releaseDate`, `rating`, dan `screenshots` (array).
+
+- **Dynamic Sitemap** (`functions/sitemap.xml.js`):
+  - Auto-generate `sitemap.xml` dari data Firestore setiap kali diakses.
+  - Sertakan homepage, `/search.html`, dan seluruh halaman game (`/game.html?slug=xxx`).
+  - Setiap entri menyertakan `lastmod`, `changefreq`, dan `priority`.
+  - Cache 1 jam di edge (`Cache-Control: public, max-age=3600`).
+  - Auto-update: tidak perlu edit manual saat menambah game baru.
+
+- **Dynamic Robots.txt** (`functions/robots.txt.js`):
+  - Menyajikan `robots.txt` yang menyertakan URL sitemap secara dinamis.
+  - Disallow halaman admin: `editor.html`, `roadmap.html`, `Login.html`, dan `/functions/`.
+  - Cache 1 jam di edge.
+
+### Changed
+
+- Meta tag strategy di `game.html` sekarang fully server-rendered: `og:title`, `og:description`, `og:image`, `og:url`, `twitter:title`, `twitter:description`, `twitter:image`, `<meta name="description">`, `<title>`, dan `canonical URL` — semua di-inject via CF Function.
+
+### Notes
+
+- **Kenapa Functions, bukan file statis:**
+  - `sitemap.xml` dan `robots.txt` disajikan lewat Cloudflare Pages Functions (bukan file statis di root) agar sitemap auto-update dari Firestore.
+  - **Penting:** Jangan menaruh `sitemap.xml` atau `robots.txt` statis di root repo — file statis akan override Function dan menyebabkan sitemap/robots tidak ter-update otomatis.
+- **Konvensi file-based routing:** Nama file di `functions/` menentukan route. `functions/sitemap.xml.js` menangani `/sitemap.xml`, `functions/robots.txt.js` menangani `/robots.txt`, dan `functions/game.js` menangani `/game`.
+- **Firestore Rules:** Sitemap & SEO function melakukan fetch publik ke Firestore. Pastikan collection `games` mengizinkan `read: true` untuk publik.
+- **JSON-LD rating:** Menggunakan rating admin (integer 1–5) sebagai `aggregateRating` sementara. Dapat di-upgrade ke rating user di masa mendatang.
+- **OG image vs SEO:** OG image tetap di-inject (untuk preview sosial media), tapi tidak memengaruhi ranking Google. Yang memengaruhi SEO: `<title>`, `<meta name="description">`, JSON-LD, dan konten halaman.
+
 ## 2026-10-11
 
 ### Added
