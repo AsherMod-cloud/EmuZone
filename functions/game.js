@@ -280,7 +280,7 @@ export async function onRequestGet(context) {
     const jsonLdScripts = `
 <script type="application/ld+json">${JSON.stringify(videoGameLd)}</script>
 <script type="application/ld+json">${JSON.stringify(breadcrumbLd)}</script>
-`;.
+`;
 
     html = html.replace("</head>", `${jsonLdScripts}</head>`);
 
