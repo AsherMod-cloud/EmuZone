@@ -1,24 +1,23 @@
-// functions/robots.txt.js
+import { SITE_URL } from "./_seo-data.js";
 
-export async function onRequest(context) {
-    const { request } = context;
-    const url = new URL(request.url);
-    const baseUrl = `${url.protocol}//${url.host}`;
+export async function onRequestGet() {
+  const body = [
+    "User-agent: *",
+    "Allow: /",
+    "Disallow: /Login.html",
+    "Disallow: /editor.html",
+    "Disallow: /roadmap.html",
+    "",
+    `Sitemap: ${SITE_URL}/sitemap.xml`,
+    ""
+  ].join("\n");
 
-    const txt = `User-agent: *
-Allow: /
-Disallow: /editor.html
-Disallow: /roadmap.html
-Disallow: /Login.html
-Disallow: /functions/
-
-Sitemap: ${baseUrl}/sitemap.xml
-`;
-
-    return new Response(txt, {
-        headers: {
-            "Content-Type": "text/plain; charset=utf-8",
-            "Cache-Control": "public, max-age=3600"
-        }
-    });
+  return new Response(body, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/plain; charset=UTF-8",
+      "Cache-Control": "public, max-age=300, s-maxage=1800",
+      "X-Content-Type-Options": "nosniff"
+    }
+  });
 }
