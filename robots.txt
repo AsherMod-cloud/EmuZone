@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Disallow: /Login.html
+Disallow: /editor.html
+Disallow: /roadmap.html
+
+Sitemap: https://emuzone.my.id/sitemap.xml

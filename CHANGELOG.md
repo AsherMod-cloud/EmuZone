@@ -14,21 +14,11 @@
   - **Helper `escapeHtml()` & `toAbsoluteUrl()`** — reusable untuk semua injeksi meta & JSON-LD.
   - Fetch field Firestore yang lebih lengkap: `genre`, `developer`, `publisher`, `releaseDate`, `rating`, dan `screenshots` (array).
 
-- **Dynamic Sitemap** (`functions/sitemap.xml.js`):
-  - Auto-generate `sitemap.xml` dari data Firestore setiap kali diakses.
-  - Sertakan homepage, `/search.html`, dan seluruh halaman game (`/game.html?slug=xxx`).
-  - Setiap entri menyertakan `lastmod`, `changefreq`, dan `priority`.
-  - Cache 1 jam di edge (`Cache-Control: public, max-age=3600`).
-  - Auto-update: tidak perlu edit manual saat menambah game baru.
-
-- **Dynamic Robots.txt** (`functions/robots.txt.js`):
-  - Menyajikan `robots.txt` yang menyertakan URL sitemap secara dinamis.
-  - Disallow halaman admin: `editor.html`, `roadmap.html`, `Login.html`, dan `/functions/`.
-  - Cache 1 jam di edge.
-
 ### Changed
 
 - Meta tag strategy di `game.html` sekarang fully server-rendered: `og:title`, `og:description`, `og:image`, `og:url`, `twitter:title`, `twitter:description`, `twitter:image`, `<meta name="description">`, `<title>`, dan `canonical URL` — semua di-inject via CF Function.
+- Replaced dynamic `sitemap.xml` and `robots.txt` Pages Functions with static root files for more reliable crawler access.
+- Generated static `sitemap.xml` from the current Firestore snapshot with 32 valid game slugs plus homepage and search page.
 
 ### Notes
 
@@ -39,6 +29,9 @@
 - **Firestore Rules:** Sitemap & SEO function melakukan fetch publik ke Firestore. Pastikan collection `games` mengizinkan `read: true` untuk publik.
 - **JSON-LD rating:** Menggunakan rating admin (integer 1–5) sebagai `aggregateRating` sementara. Dapat di-upgrade ke rating user di masa mendatang.
 - **OG image vs SEO:** OG image tetap di-inject (untuk preview sosial media), tapi tidak memengaruhi ranking Google. Yang memengaruhi SEO: `<title>`, `<meta name="description">`, JSON-LD, dan konten halaman.
+
+### Removed
+- Removed `functions/sitemap.xml.js`, `functions/robots.txt.js`, and the sitemap-only helper `functions/_seo-data.js`.
 
 ## 2026-10-11
 
