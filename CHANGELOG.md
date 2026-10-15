@@ -1,5 +1,40 @@
 # Changelog
 
+## 2026-10-16
+
+### Fixed
+
+- **Fixed `getEmulatorInfo is not defined` di `editor.js`** — penyebabnya race condition: `editor.js` dieksekusi sebelum `emulator-config.js` selesai di-parse, sehingga function `getEmulatorInfo()` belum terdefinisi saat form editor diinisialisasi. Solusi: memindahkan `<script src="js/emulator-config.js">` dari akhir `<body>` ke dalam `<head>` `editor.html`, sebelum script halaman dimuat. Ini menjamin semua helper & registry emulator tersedia sebelum `editor.js` berjalan.
+- **Fixed fitur Save di editor yang stuck tanpa error** — gejalanya tombol tidak berubah menjadi `"Saving..."`, tidak ada error di Console, tapi game tidak tersimpan. Akar masalah: `buildGameSearchFields()` dipanggil di save handler `editor.js`, tapi function tersebut berada di `script.js` yang tidak dimuat di `editor.html`. Hal ini menyebabkan `ReferenceError` yang tidak tertangkap dan menghentikan handler secara silent.
+- **Fixed `buildGameSearchFields` not found saat save** — ditambahkan safe check `if (typeof buildGameSearchFields === "function")` di save handler `editor.js`. Jika function tidak tersedia, save tetap berjalan dan hanya search fields (`title_words`, `title_substrings`) yang di-skip, bukan menggagalkan seluruh proses save.
+
+### Changed
+
+- **Search helpers dipindahkan dari `script.js` ke `emulator-config.js`:**
+  - `normalizeSearchText()` — normalisasi teks untuk pencarian.
+  - `generateTitleWords()` — pecah judul menjadi array kata unik.
+  - `generateTitleSubstrings()` — generate substring (2+ karakter) untuk mendukung partial word search.
+  - `buildGameSearchFields()` — gabungkan `title_words` + `title_substrings` untuk disimpan ke Firestore.
+  - **Alasan:** function-function ini dipakai di 3 halaman berbeda (`editor.html` untuk save game, `index.html` untuk filter live, `search.html` untuk server-side search). Menaruhnya di `emulator-config.js` sebagai *shared helper* memastikan semua halaman mendapat akses yang sama tanpa duplikasi kode.
+- **Script order di 3 halaman diselaraskan:**
+  - `editor.html`, `index.html`, dan `search.html` sekarang memuat `emulator-config.js` **sebelum** `script.js` / `editor.js` / `search.js`.
+  - Urutan konsisten: `firebase.js` → `emulator-config.js` → `auth.js` → `error-modal.js` → halaman JS.
+
+### Cleaned up
+
+- Menghapus semua `console.log` debug sementara:
+  - `[CONFIG] emulator-config.js LOADED...` di `emulator-config.js`.
+  - `[EDITOR] editor.js LOADED...` di `editor.js`.
+  - Semua log `[SAVE] 1` hingga `[SAVE] 14` di save handler `editor.js`.
+- Mempertahankan `console.warn` untuk emulator tidak dikenal dan `console.error` di catch block — sesuai best practice: `console.log` untuk debug (dihapus), `warn`/`error` untuk error tracking (dipertahankan).
+
+### Notes
+
+- **Pelajaran penting — script order matters.** Script yang berisi helper/function murni (`emulator-config.js`) harus dimuat di `<head>` agar tersedia sebelum script halaman. Script yang butuh DOM (akses `document.getElementById`, dll) harus dimuat di akhir `<body>`.
+- **Race condition itu silent.** Bug ini tidak memunculkan error saat halaman load — baru muncul ketika user berinteraksi (klik Save). Ini membuat debugging lebih sulit dibanding error yang muncul langsung.
+- **Shared helper = 1 sumber kebenaran.** Jika ada bug di `buildGameSearchFields`, perbaikan cukup dilakukan di `emulator-config.js` dan otomatis berlaku untuk semua halaman yang memakainya.
+- **Safe check sebelum panggil function.** Pola `if (typeof fn === "function")` berguna untuk mencegah crash total saat function optional tidak tersedia — terutama di environment yang bisa berubah (deploy partial, cache stale, dll).
+
 ## 2026-10-12
 
 ### Added

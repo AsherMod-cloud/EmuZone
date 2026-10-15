@@ -88,6 +88,12 @@ const DEFAULT_ROADMAP = [
   { id: "catalog-download-counter",      category: "Game Catalog",   title: "Download Counter" },
   { id: "catalog-game-rating",           category: "Game Catalog",   title: "Game Rating" },
   { id: "catalog-size-formatter",        category: "Game Catalog",   title: "Auto Game Size Formatter" },
+  { id: "catalog-search-server-side",    category: "Game Catalog",   title: "Server-side search (title_words + substrings)" },
+  { id: "catalog-search-page",           category: "Game Catalog",   title: "Dedicated search page (search.html)" },
+  { id: "catalog-search-url-query",      category: "Game Catalog",   title: "Search URL query parameter (?q=)" },
+  { id: "catalog-search-pagination",     category: "Game Catalog",   title: "Search pagination" },
+  { id: "catalog-load-more",             category: "Game Catalog",   title: "Load More pagination (per-console)" },
+  { id: "catalog-console-empty",         category: "Game Catalog",   title: "Empty state per console" },
 
   // Content
   { id: "content-games",                 category: "Content",        title: "Games Emulator" },
@@ -157,7 +163,8 @@ const DEFAULT_ROADMAP = [
   { id: "ux-loading-indicator",          category: "UI / UX",        title: "Loading indicator" },
   { id: "ux-lazy-images",                category: "UI / UX",        title: "Lazy loading image" },
   { id: "ux-image-optimization",         category: "UI / UX",        title: "Image optimization" },
-  { id: "ux-scroll-top",                 category: "UI / UX",        title: "Scroll to top" },
+  { id: "ux-scroll-top",                 category: "UI / UX",        title: "Rocket Scroll to top" },
+  { id: "ux-load-more-btn",              category: "UI / UX",        title: "Load More button (15/page)" },
   { id: "ux-toast",                      category: "UI / UX",        title: "Toast notification" },
   { id: "ux-empty-state",                category: "UI / UX",        title: "Empty state illustration" },
   { id: "ux-mobile-navigation",          category: "UI / UX",        title: "Mobile navigation" },
@@ -176,6 +183,8 @@ const DEFAULT_ROADMAP = [
   { id: "seo-breadcrumb",                category: "SEO",            title: "Breadcrumb" },
   { id: "seo-search-console",            category: "SEO",            title: "Google Search Console" },
   { id: "seo-bing",                      category: "SEO",            title: "Bing Webmaster Tools" },
+  { id: "seo-dynamic-meta",              category: "SEO",            title: "Dynamic meta per game (via CF Function)" },
+  { id: "seo-og-dynamic",                category: "SEO",            title: "Dynamic OG image per game" },
 
   // Security
   { id: "security-auth",                 category: "Security",       title: "Firebase Authentication" },
@@ -193,6 +202,7 @@ const DEFAULT_ROADMAP = [
 
   // Deployment
   { id: "deployment-cloudflare",         category: "Deployment",     title: "Cloudflare Pages" },
+  { id: "deployment-cf-functions",       category: "Deployment",        title: "Cloudflare Pages Functions (SEO + sitemap + robots)" },
   { id: "deployment-firebase",           category: "Deployment",     title: "Firebase project" },
   { id: "deployment-domain",             category: "Deployment",     title: "Custom domain" },
   { id: "deployment-analytics",          category: "Deployment",     title: "Cloudflare Analytics" },
@@ -226,6 +236,8 @@ const DEFAULT_ROADMAP = [
 
   // Owner Workspace
   { id: "workspace-roadmap",             category: "Owner Workspace", title: "Owner-only roadmap" },
+  { id: "workspace-telegram-bot",        category: "Owner Workspace", title: "Telegram analytics bot" },
+  { id: "workspace-telegram-seo",        category: "Owner Workspace", title: "Telegram bot — SEO ready" },
   { id: "workspace-status",              category: "Owner Workspace", title: "Custom status selector" },
   { id: "workspace-filter",              category: "Owner Workspace", title: "Roadmap filter" },
   { id: "workspace-summary",             category: "Owner Workspace", title: "Roadmap summary" },

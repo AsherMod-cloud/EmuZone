@@ -86,55 +86,6 @@ function escapeHtml(str) {
         .replace(/'/g, "&#039;");
 }
 
-// ---------- Search Index Helpers ----------
-
-function normalizeSearchText(value) {
-    return String(value || "")
-        .normalize("NFKC")
-        .toLocaleLowerCase("id-ID")
-        .trim();
-}
-
-function generateTitleWords(title) {
-    return [
-        ...new Set(
-            normalizeSearchText(title)
-                .split(/[^\p{L}\p{N}]+/u)
-                .filter(Boolean)
-        )
-    ];
-}
-
-function generateTitleSubstrings(title, minLength = 2) {
-    const words = generateTitleWords(title);
-    const substrings = new Set();
-
-    for (const word of words) {
-        const chars = Array.from(word);
-
-        for (let start = 0; start < chars.length; start++) {
-            for (
-                let end = start + minLength;
-                end <= chars.length;
-                end++
-            ) {
-                substrings.add(
-                    chars.slice(start, end).join("")
-                );
-            }
-        }
-    }
-
-    return [...substrings];
-}
-
-function buildGameSearchFields(title) {
-    return {
-        title_words: generateTitleWords(title),
-        title_substrings: generateTitleSubstrings(title)
-    };
-}
-
 // Bisa dipakai oleh script admin untuk menyimpan indeks pencarian.
 window.generateTitleWords = generateTitleWords;
 window.generateTitleSubstrings = generateTitleSubstrings;

@@ -290,76 +290,59 @@ saveBtn.addEventListener("click", async () => {
     return;
   }
 
-  // Validasi field dinamis yang wajib buat emulator ini
   const emulatorName = document.getElementById("fEmulator").value.trim();
   const emulatorInfo = getEmulatorInfo(emulatorName);
 
   if (emulatorName && !emulatorInfo.name) {
     alert(`Unknown emulator: "${emulatorName}"`);
-   return;
+    return;
   }
 
-const { requiredFields } = emulatorInfo;
+  const { requiredFields } = emulatorInfo;
+  const missing = [];
 
-const missing = [];
-
-requiredFields.forEach(id => {
-    const input = dynContainer.querySelector(
-        `[data-req-id="${id}"]`
-    );
-
+  requiredFields.forEach(id => {
+    const input = dynContainer.querySelector(`[data-req-id="${id}"]`);
     const val = input ? input.value.trim() : "";
-
     if (!val) missing.push(REQUIREMENT_TYPES[id].label);
+    if (input) input.classList.toggle("missing", !val);
+  });
 
-    if (input) {
-        input.classList.toggle("missing", !val);
-    }
-});
-
-  // Kumpulin semua nilai requirement (baik yang lagi kepake maupun yang tersimpan tapi disembunyikan)
   dynContainer.querySelectorAll("[data-req-id]").forEach(input => {
     requirementValues[input.dataset.reqId] = input.value.trim();
   });
 
-  const releaseYearRaw = document.getElementById("fReleaseDate").value.trim();
   const ratingRaw = document.getElementById("fRating").value;
 
   const data = {
-  title,
-  ...buildGameSearchFields(title),
-  console: consoleName,
-  genre: document.getElementById("fGenre").value.trim(),
-  publisher: document.getElementById("fPublisher").value.trim(),
-  developer: document.getElementById("fDeveloper").value.trim(),
+    title,
+    console: consoleName,
+    genre: document.getElementById("fGenre").value.trim(),
+    publisher: document.getElementById("fPublisher").value.trim(),
+    developer: document.getElementById("fDeveloper").value.trim(),
+    releaseDate: document.getElementById("fReleaseDate").value.trim(),
+    region: document.getElementById("fRegion").value.trim(),
+    cover: document.getElementById("fCover").value.trim(),
+    banner: document.getElementById("fBanner").value.trim(),
+    screenshots: getScreenshots(),
+    link,
+    texturePack: document.getElementById("fTexturePack").value.trim(),
+    saveData: document.getElementById("fSaveData").value.trim(),
+    cheatDb: document.getElementById("fCheatDb").value.trim(),
+    patch: document.getElementById("fPatch").value.trim(),
+    emulator: document.getElementById("fEmulator").value.trim(),
+    emulatorDownload: document.getElementById("fEmulatorDownload").value.trim(),
+    series: document.getElementById("fSeries").value.trim(),
+    size: document.getElementById("fSize").value.trim(),
+    status: document.getElementById("fStatus").value,
+    rating: ratingRaw ? Number(ratingRaw) : null,
+    description: document.getElementById("fDesc").value.trim(),
+  };
 
-  releaseDate: document.getElementById("fReleaseDate").value.trim(),
+  if (typeof buildGameSearchFields === "function") {
+    Object.assign(data, buildGameSearchFields(title));
+  }
 
-  region: document.getElementById("fRegion").value.trim(),
-  cover: document.getElementById("fCover").value.trim(),
-  banner: document.getElementById("fBanner").value.trim(),
-  screenshots: getScreenshots(),
-
-  link,
-
-  texturePack: document.getElementById("fTexturePack").value.trim(),
-  saveData: document.getElementById("fSaveData").value.trim(),
-  cheatDb: document.getElementById("fCheatDb").value.trim(),
-  patch: document.getElementById("fPatch").value.trim(),
-
-  emulator: document.getElementById("fEmulator").value.trim(),
-  emulatorDownload: document.getElementById("fEmulatorDownload").value.trim(),
-
-  series: document.getElementById("fSeries").value.trim(),
-
-  size: document.getElementById("fSize").value.trim(),
-  status: document.getElementById("fStatus").value,
-  rating: ratingRaw ? Number(ratingRaw) : null,
-  description: document.getElementById("fDesc").value.trim(),
-};
-
-  // Semua tipe requirement (bios, firmware, keys, dst) ikut kesimpen —
-  // biar data gak ilang walau field-nya lagi disembunyiin karena emulator beda.
   Object.keys(REQUIREMENT_TYPES).forEach(id => {
     data[id] = requirementValues[id] || "";
   });
@@ -368,8 +351,6 @@ requiredFields.forEach(id => {
   saveBtn.textContent = "Saving...";
 
   try {
-    // Slug cuma dibuat sekali. Kalau edit game yang udah punya slug, dipertahankan
-    // (biar link yang udah kesebar ke orang gak jadi rusak).
     if (existingSlug) {
       data.slug = existingSlug;
     } else {
