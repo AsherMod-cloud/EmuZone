@@ -542,19 +542,23 @@ function renderGrid(){
             };
             const cancelPress = () => clearTimeout(pressTimer);
 
-            card.addEventListener("touchstart", startPress, { passive: true });
-            card.addEventListener("touchend", cancelPress);
-            card.addEventListener("touchmove", cancelPress);
-            card.addEventListener("mousedown", startPress);
-            card.addEventListener("mouseup", cancelPress);
-            card.addEventListener("mouseleave", cancelPress);
-            card.addEventListener("click", (e) => {
-                if (longPressed) { e.preventDefault(); longPressed = false; }
-            });
+						card.addEventListener("touchstart", startPress, { passive: true });
+						card.addEventListener("touchend", cancelPress);
+						card.addEventListener("touchmove", cancelPress);
+						card.addEventListener("mousedown", startPress);
+						card.addEventListener("mouseup", cancelPress);
+						card.addEventListener("mouseleave", cancelPress);
+						card.addEventListener("click", (e) => {
+						    if (longPressed) { e.preventDefault(); longPressed = false; }
+						});
 
-            grid.appendChild(card);
-        });
-    }
+						// ⬇️ TAMBAH 2 BARIS INI
+						card.addEventListener("contextmenu", (e) => e.preventDefault());
+						card.addEventListener("selectstart", (e) => e.preventDefault());
+
+						grid.appendChild(card);
+				});
+			}
 
     // Update tombol Load More (cuma visibility & label — gak recreate)
     updateLoadMoreButton();
@@ -659,38 +663,42 @@ modalCard.addEventListener("click", (e) => e.stopPropagation());
     });
 })();
 
-// ---------- Welcome modal ----------
+// ---------- Welcome modal (per-hari) ----------
 (function setupWelcomeModal(){
-    const overlay = document.getElementById("welcomeOverlay");
-    const continueBtn = document.getElementById("welcomeContinue");
-    const sessionCheck = document.getElementById("welcomeSessionCheck");
-    const sessionKey = "emulatorGamesIdWelcomeSeen";
-    if (!overlay || !continueBtn || !sessionCheck) return;
+  const overlay = document.getElementById("welcomeOverlay");
+  const continueBtn = document.getElementById("welcomeContinue");
+  const sessionCheck = document.getElementById("welcomeSessionCheck");
+  const storageKey = "emuzoneWelcomeLastSeen";
+  if(!overlay || !continueBtn || !sessionCheck) return;
 
-    const close = () => {
-        if (sessionCheck.checked) {
-            sessionStorage.setItem(sessionKey, "1");
-        }
-        overlay.classList.remove("open");
-        document.body.classList.remove("modal-open");
-    };
+  const today = new Date().toISOString().slice(0, 10); // "2026-10-17"
+  const lastSeen = localStorage.getItem(storageKey);
 
-    if (!sessionStorage.getItem(sessionKey)) {
-        requestAnimationFrame(() => {
-            overlay.classList.add("open");
-            document.body.classList.add("modal-open");
-        });
-    } else {
-        overlay.remove();
+  const close = () => {
+    if(sessionCheck.checked){
+      localStorage.setItem(storageKey, today);
     }
+    overlay.classList.remove("open");
+    document.body.classList.remove("modal-open");
+  };
 
-    continueBtn.addEventListener("click", close);
-    overlay.addEventListener("click", (event) => {
-        if (event.target === overlay) close();
+  // Tampilkan hanya kalau belum lihat hari ini
+  if(lastSeen !== today){
+    requestAnimationFrame(() => {
+      overlay.classList.add("open");
+      document.body.classList.add("modal-open");
     });
-    document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && overlay.classList.contains("open")) close();
-    });
+  } else {
+    overlay.remove();
+  }
+
+  continueBtn.addEventListener("click", close);
+  overlay.addEventListener("click", (event) => {
+    if(event.target === overlay) close();
+  });
+  document.addEventListener("keydown", (event) => {
+    if(event.key === "Escape" && overlay.classList.contains("open")) close();
+  });
 })();
 
 // ---------- Boot ----------

@@ -184,6 +184,22 @@
     outline:2px solid var(--amber); 
     outline-offset:2px;
   }
+
+  /* Global: disable long-press callout */
+   body {
+   -webkit-touch-callout: none;
+  }
+
+  /* Pengecualian: form input tetap bisa select */
+   input,
+   textarea,
+   select,
+  [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+   }
+  
   /* ---- Grid & cards ---- */
   main{max-width:1100px;margin:0 auto;padding:0 clamp(16px,4vw,48px) 60px;}
   .grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:18px;align-items:start;}

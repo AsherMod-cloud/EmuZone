@@ -7,6 +7,10 @@
 - **Fixed `getEmulatorInfo is not defined` di `editor.js`** — penyebabnya race condition: `editor.js` dieksekusi sebelum `emulator-config.js` selesai di-parse, sehingga function `getEmulatorInfo()` belum terdefinisi saat form editor diinisialisasi. Solusi: memindahkan `<script src="js/emulator-config.js">` dari akhir `<body>` ke dalam `<head>` `editor.html`, sebelum script halaman dimuat. Ini menjamin semua helper & registry emulator tersedia sebelum `editor.js` berjalan.
 - **Fixed fitur Save di editor yang stuck tanpa error** — gejalanya tombol tidak berubah menjadi `"Saving..."`, tidak ada error di Console, tapi game tidak tersimpan. Akar masalah: `buildGameSearchFields()` dipanggil di save handler `editor.js`, tapi function tersebut berada di `script.js` yang tidak dimuat di `editor.html`. Hal ini menyebabkan `ReferenceError` yang tidak tertangkap dan menghentikan handler secara silent.
 - **Fixed `buildGameSearchFields` not found saat save** — ditambahkan safe check `if (typeof buildGameSearchFields === "function")` di save handler `editor.js`. Jika function tidak tersedia, save tetap berjalan dan hanya search fields (`title_words`, `title_substrings`) yang di-skip, bukan menggagalkan seluruh proses save.
+- - **Fixed text selection yang bocor saat long-press di grid card** — di mobile (Android/iOS), long-press pada card memicu text selection + native context menu ("Copy", "Select All", "Web search"). Solusi: 
+  - CSS `user-select: none` + `-webkit-touch-callout: none` + `-webkit-tap-highlight-color: transparent` untuk card dan seluruh anaknya.
+  - JS `contextmenu` + `selectstart` event listener di tiap card, keduanya `preventDefault()` untuk mencegah browser behavior default.
+- **Fixed welcome modal yang muncul terus saat development** — welcome modal muncul setiap refresh di localhost karena `localStorage` kosong setiap sesi baru. Sudah diganti dari `sessionStorage` ke `localStorage` dengan date stamp (`YYYY-MM-DD`), sehingga modal hanya muncul sekali per hari.
 
 ### Changed
 
@@ -19,6 +23,7 @@
 - **Script order di 3 halaman diselaraskan:**
   - `editor.html`, `index.html`, dan `search.html` sekarang memuat `emulator-config.js` **sebelum** `script.js` / `editor.js` / `search.js`.
   - Urutan konsisten: `firebase.js` → `emulator-config.js` → `auth.js` → `error-modal.js` → halaman JS.
+  **Welcome modal jadi per-hari (bukan per-sesi):** sekarang pakai `localStorage` dengan key `emuzoneWelcomeLastSeen` yang menyimpan tanggal hari ini (`YYYY-MM-DD`). Modal hanya muncul kalau user belum lihat hari ini. Label checkbox di `index.html` juga diupdate jadi "Jangan tampilkan lagi hari ini".
 
 ### Cleaned up
 
