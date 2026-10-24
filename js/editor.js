@@ -267,7 +267,7 @@ if (editId) {
   gamesRef.doc(editId).get().then(doc => {
     if (!doc.exists) {
       alert("Game tidak ditemukan.");
-      window.location.href = "index.html";
+      window.location.href = "/";
       return;
     }
     fillForm(doc.data());
@@ -363,7 +363,7 @@ saveBtn.addEventListener("click", async () => {
     } else {
       await gamesRef.add({ ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
     }
-    window.location.href = "index.html";
+    window.location.href = "/";
   } catch (err) {
     alert("Gagal simpan: " + err.message);
     saveBtn.disabled = false;
@@ -372,8 +372,8 @@ saveBtn.addEventListener("click", async () => {
 });
 
 // ---------- Cancel / Back ----------
-cancelBtn.addEventListener("click", () => window.location.href = "index.html");
-backBtn.addEventListener("click", () => window.location.href = "index.html");
+cancelBtn.addEventListener("click", () => window.location.href = "/");
+backBtn.addEventListener("click", () => window.location.href = "/");
 // Force remove loader & auth-pending
 document.querySelector(".auth-loader")?.remove();
 document.body.classList.remove("auth-pending");

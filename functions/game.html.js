@@ -1,3 +1,0 @@
-// Alias route: Pages Functions filenames map directly to URL paths.
-// Reuse the existing SSR metadata handler for /game.html?slug=...
-export { onRequestGet } from "./game.js";

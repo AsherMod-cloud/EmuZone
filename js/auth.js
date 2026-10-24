@@ -47,7 +47,7 @@ function isAdminUser(user) {
 }
 
 function redirectToLogin() {
-    window.location.replace("Login.html");
+    window.location.replace("/login");
 }
 
 function requireLogin() {
@@ -101,7 +101,7 @@ function redirectIfLoggedIn() {
         if (!user) return;
 
         if (isAdminUser(user)) {
-            window.location.replace("index.html");
+            window.location.replace("/");
         } else {
             auth.signOut();
         }
@@ -116,6 +116,6 @@ function onAdminStateChanged(callback) {
 
 function logout() {
     return auth.signOut().then(() => {
-        window.location.href = "Login.html";
+        window.location.href = "/login";
     });
 }

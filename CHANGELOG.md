@@ -1,5 +1,37 @@
 # Changelog
 
+## 2026-10-26
+
+### Added
+- **Cloudflare Turnstile & Server-side Rate Limiting pada Login:**
+  - Menambahkan widget Cloudflare Turnstile pada `login.html` untuk mencegah serangan bot / brute-force otomatis.
+  - Menambahkan Cloudflare Pages Function (`functions/api/login.js`) sebagai *gatekeeper* sebelum request masuk ke Firebase Auth.
+  - Mengintegrasikan **Cloudflare KV (`RATE_LIMIT_KV`)** untuk membatasi maksimal 5 percobaan login per IP address dalam kurun waktu 15 menit.
+  - Verifikasi token Turnstile di sisi server via API `siteverify` Cloudflare sebelum mengizinkan autentikasi Firebase.
+
+### Changed
+- **Implementasi Clean URL secara menyeluruh:** Menghapus ekstensi `.html` dari semua tautan internal, form action, dan JavaScript redirect (`window.location.href` / `replace`).
+  - URL Homepage sekarang cukup menggunakan root (`/`), bukan `/index.html`.
+  - URL seperti `/editor`, `/roadmap`, `/login`, dan `/search` sekarang berfungsi tanpa ekstensi, memanfaatkan fitur bawaan Cloudflare Pages (*HTML extension stripping*).
+- **Rename file `Login.html` menjadi `login.html`** (huruf kecil) untuk menyesuaikan standar penamaan URL yang lebih rapi dan konsisten.
+- **Alur Login baru:** Validasi form (Client) → Verifikasi Turnstile & Rate Limit (CF Function) → Autentikasi (Firebase Auth) → Verifikasi Admin UID.
+- Jika proses login gagal, widget Turnstile otomatis di-*reset* agar user bisa mencoba lagi tanpa harus reload halaman.
+
+### Removed
+- **Menghapus seluruh logika rate limiting berbasis `localStorage`** di `login.js` (fungsi `readLoginRateLimit`, `writeLoginRateLimit`, `recordLoginFailure`, dll) karena sudah digantikan oleh sistem server-side yang jauh lebih aman.
+
+### Fixed
+- Memperbarui *canonical URL* dan *internal links* di dalam fungsi SEO (`functions/game.js`) agar konsisten dengan format Clean URL.
+- Memperbarui semua instruksi redirect di JavaScript (`auth.js`, `login.js`, `editor.js`, `game.js`, `roadmap.js`) dan tag `<a href="...">` di seluruh HTML.
+
+### Security
+- **Peningkatan keamanan signifikan:** Rate limit di `localStorage` sangat rentan di-*bypass* (user tinggal clear cache / pakai Incognito). Dengan CF Functions + KV, rate limit dihitung berdasarkan IP Address di edge network dan tidak bisa dimanipulasi dari sisi client.
+- Menambahkan proteksi bot berlapis (Turnstile Challenge) sebelum bot bisa menebak password.
+
+### Notes
+- **Konfigurasi Cloudflare:** Fitur keamanan login membutuhkan binding KV Namespace dengan nama `RATE_LIMIT_KV` dan Environment Variable `TURNSTILE_SECRET_KEY` yang di-set di dashboard Cloudflare Pages.
+- **Kenapa tetap pakai Cloudflare Pages?** Fitur *Clean URL* bawaan CF sangat memudahkan karena tidak perlu mengonfigurasi `_redirects` manual, dan CF tetap bisa menyajikan file statis (seperti `sitemap.xml` dan `robots.txt`) di root directory secara bersamaan tanpa bentrok dengan sistem routing Functions.
+
 ## 2026-10-16
 
 ### Fixed

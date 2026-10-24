@@ -20,7 +20,7 @@
       title: "GAME NOT FOUND",
       desc: "Game yang kamu cari udah gak ada, dihapus, atau link-nya salah. Coba cek daftar game di halaman utama.",
       btnText: "< BACK TO HOME >",
-      btnHref: "index.html",
+      btnHref: "/",
       accent: "#5fb0ff",       // biru
       accentRgb: "95, 176, 255",
     },
@@ -40,7 +40,7 @@
       title: "AKSES DITOLAK",
       desc: "Halaman ini cuma bisa diakses admin. Login dulu pakai akun yang berhak.",
       btnText: "< BACK TO HOME >",
-      btnHref: "index.html",
+      btnHref: "/",
       accent: "#ffcc00",       // kuning
       accentRgb: "255, 204, 0",
     },

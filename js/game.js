@@ -414,7 +414,7 @@ function setupToolbar(g, id){
         .getElementById("editGameBtn")
         .onclick=()=>{
 
-            location.href=`editor.html?id=${id}`;
+            location.href=`/editor?id=${id}`;
 
         };
 
@@ -451,7 +451,7 @@ function setupToolbar(g, id){
 
                     alert("Game berhasil dihapus.");
 
-                    location.href="index.html";
+                    location.href="/";
 
                 });
 

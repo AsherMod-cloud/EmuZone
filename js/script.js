@@ -1,7 +1,7 @@
 // ---------- Hidden admin login ----------
 function checkAdminHash(){
     if (location.hash === "#admin-login") {
-        window.location.replace("Login.html");
+        window.location.replace("/login");
     }
 }
 checkAdminHash();
