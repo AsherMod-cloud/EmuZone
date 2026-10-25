@@ -1,6 +1,4 @@
-# Changelog
-
-## 2026-10-26
+## 2026-10-25
 
 ### Added
 - **Cloudflare Turnstile & Server-side Rate Limiting pada Login:**
@@ -10,11 +8,13 @@
   - Verifikasi token Turnstile di sisi server via API `siteverify` Cloudflare sebelum mengizinkan autentikasi Firebase.
 
 ### Changed
+- **Restrukturisasi Folder Admin:** Memindahkan seluruh halaman internal (`editor.html`, `login.html`, dan `roadmap.html`) ke dalam folder `admin/` serta memindahkan aset khusus admin ke `admin/css/` dan `admin/js/`.
+- **Update Path Aset:** Menyesuaikan seluruh *relative asset paths* untuk file di dalam folder admin. File *shared* (Firebase, auth, emulator-config, error-modal) tetap berada di root folder `js/` dan `css/` dan diakses menggunakan *absolute path* (contoh: `/js/auth.js`).
 - **Implementasi Clean URL secara menyeluruh:** Menghapus ekstensi `.html` dari semua tautan internal, form action, dan JavaScript redirect (`window.location.href` / `replace`).
   - URL Homepage sekarang cukup menggunakan root (`/`), bukan `/index.html`.
-  - URL seperti `/editor`, `/roadmap`, `/login`, dan `/search` sekarang berfungsi tanpa ekstensi, memanfaatkan fitur bawaan Cloudflare Pages (*HTML extension stripping*).
-- **Rename file `Login.html` menjadi `login.html`** (huruf kecil) untuk menyesuaikan standar penamaan URL yang lebih rapi dan konsisten.
-- **Alur Login baru:** Validasi form (Client) → Verifikasi Turnstile & Rate Limit (CF Function) → Autentikasi (Firebase Auth) → Verifikasi Admin UID.
+  - URL seperti `/admin/editor`, `/admin/roadmap`, `/admin/login`, dan `/search` sekarang berfungsi tanpa ekstensi, memanfaatkan fitur bawaan Cloudflare Pages (*HTML extension stripping*).
+- **Rename file `Login.html` menjadi `login.html`** (huruf kecil) dan memindahkannya ke folder `admin/` untuk menyesuaikan standar penamaan URL yang lebih rapi.
+- **Alur Login baru:** Validasi form (Client) → Verifikasi Turnstile & Rate Limit (CF Function) → Autentikasi (Firebase Auth) → Verifikasi Admin UID → Redirect ke `/` atau `/admin/`.
 - Jika proses login gagal, widget Turnstile otomatis di-*reset* agar user bisa mencoba lagi tanpa harus reload halaman.
 
 ### Removed
@@ -27,6 +27,7 @@
 ### Security
 - **Peningkatan keamanan signifikan:** Rate limit di `localStorage` sangat rentan di-*bypass* (user tinggal clear cache / pakai Incognito). Dengan CF Functions + KV, rate limit dihitung berdasarkan IP Address di edge network dan tidak bisa dimanipulasi dari sisi client.
 - Menambahkan proteksi bot berlapis (Turnstile Challenge) sebelum bot bisa menebak password.
+- **Update `robots.txt`:** Menambahkan aturan untuk mengecualikan seluruh workspace `/admin/` dari proses *crawling* mesin pencari agar halaman internal tidak terindeks.
 
 ### Notes
 - **Konfigurasi Cloudflare:** Fitur keamanan login membutuhkan binding KV Namespace dengan nama `RATE_LIMIT_KV` dan Environment Variable `TURNSTILE_SECRET_KEY` yang di-set di dashboard Cloudflare Pages.

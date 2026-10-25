@@ -414,7 +414,7 @@ function setupToolbar(g, id){
         .getElementById("editGameBtn")
         .onclick=()=>{
 
-            location.href=`/editor?id=${id}`;
+            location.href=`/admin/editor?id=${id}`;
 
         };
 
@@ -433,7 +433,7 @@ function setupToolbar(g, id){
                     ...copy,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                location.href = `editor.html?id=${newDoc.id}`;
+                location.href = `/admin/editor?id=${newDoc.id}`;
             } catch(err) {
                 alert("Gagal duplikat: " + err.message);
             }

@@ -116,6 +116,6 @@ function onAdminStateChanged(callback) {
 
 function logout() {
     return auth.signOut().then(() => {
-        window.location.href = "/login";
+        window.location.href = "/admin/login";
     });
 }
