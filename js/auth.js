@@ -47,7 +47,7 @@ function isAdminUser(user) {
 }
 
 function redirectToLogin() {
-    window.location.replace("/login");
+    window.location.replace("/admin/login");
 }
 
 function requireLogin() {
@@ -101,7 +101,7 @@ function redirectIfLoggedIn() {
         if (!user) return;
 
         if (isAdminUser(user)) {
-            window.location.replace("/");
+            window.location.replace("/admin/dashboard");
         } else {
             auth.signOut();
         }

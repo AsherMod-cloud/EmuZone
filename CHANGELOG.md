@@ -1,3 +1,40 @@
+## 2026-10-26
+
+### Added
+- **Admin Dashboard (`/admin/dashboard.html`):** Halaman pusat kendali admin baru yang menampilkan ringkasan statistik (Kunjungan, Total Game, Status Game, Traffic Chart, Game Terbaru, dan Request User).
+- **Cloudflare Analytics API Endpoint (`functions/api/stats.js`):** Endpoint server-side untuk mengambil data kunjungan (Visits & Pageviews) yang lebih akurat langsung dari CF GraphQL API.
+- **Cloudflare Turnstile & Server-side Rate Limiting pada Login:**
+  - Menambahkan widget Cloudflare Turnstile untuk mencegah serangan bot / brute-force otomatis.
+  - Menambahkan Cloudflare Pages Function (`functions/api/login.js`) sebagai *gatekeeper* sebelum request masuk ke Firebase Auth.
+  - Mengintegrasikan **Cloudflare KV (`RATE_LIMIT_KV`)** untuk membatasi maksimal 5 percobaan login per IP address dalam kurun waktu 15 menit.
+- **Hybrid Traffic Tracking:** Sistem pelacakan traffic yang menggabungkan akurasi Cloudflare Analytics (untuk total kunjungan) dan detail Firestore (untuk data per halaman dan per game).
+- **Firestore Security Rules:** Mengimplementasikan aturan keamanan database untuk `games`, `traffic`, `requests`, dan `roadmap`.
+
+### Changed
+- **Alur Admin Baru (One-Stop Admin):** Navigasi admin dipusatkan ke Dashboard. Tombol "Tambah Game" dan "Notepad/Roadmap" dihapus dari `index.html` dan dipindahkan ke halaman Dashboard.
+- **Update Redirect Alur Admin:** Proses login yang berhasil, setelah save/cancel game di Editor, dan tombol back di Roadmap sekarang otomatis mengarah kembali ke `/admin/dashboard.html` (bukan ke homepage).
+- **Restrukturisasi Folder Admin:** Memindahkan seluruh halaman internal (`editor.html`, `login.html`, dan `roadmap.html`) ke dalam folder `admin/` serta memindahkan aset khusus admin ke `admin/css/` dan `admin/js/`.
+- **Implementasi Clean URL secara menyeluruh:** Menghapus ekstensi `.html` dari semua tautan internal dan JavaScript redirect (`window.location.href` / `replace`).
+  - URL Homepage sekarang cukup menggunakan root (`/`), bukan `/index.html`.
+  - URL seperti `/admin/editor`, `/admin/roadmap`, `/admin/dashboard`, dan `/search` sekarang berfungsi tanpa ekstensi (memanfaatkan fitur HTML extension stripping Cloudflare Pages).
+- **Update Path Aset:** Menyesuaikan seluruh *relative asset paths* untuk file di dalam folder admin menggunakan *absolute path* (contoh: `/js/auth.js`).
+- **Rename file `Login.html` menjadi `login.html`** (huruf kecil) dan memindahkannya ke folder `admin/` untuk menyesuaikan standar penamaan URL yang lebih rapi.
+
+### Removed
+- **Menghapus seluruh logika rate limiting berbasis `localStorage`** di `login.js` (fungsi `readLoginRateLimit`, `writeLoginRateLimit`, `recordLoginFailure`, dll) karena sudah digantikan oleh sistem server-side yang jauh lebih aman.
+
+### Fixed
+- Memperbarui *canonical URL* dan *internal links* di fungsi SEO (`functions/game.js`) agar konsisten dengan format Clean URL.
+- Memperbarui semua instruksi redirect di JavaScript (`auth.js`, `login.js`, `editor.js`, `game.js`, `roadmap.js`).
+- Menambahkan aturan di `robots.txt` untuk mengecualikan seluruh workspace `/admin/` dari proses *crawling* mesin pencari agar halaman internal tidak terindeks.
+
+### Security
+- **Peningkatan keamanan signifikan:** Rate limit di `localStorage` sangat rentan di-*bypass*. Dengan CF Functions + KV, rate limit dihitung berdasarkan IP Address di edge network dan tidak bisa dimanipulasi dari sisi client.
+- Menambahkan proteksi bot berlapis (Turnstile Challenge) sebelum bot bisa menebak password.
+
+### Notes
+- **Konfigurasi Cloudflare:** Fitur keamanan login dan stats API membutuhkan binding KV Namespace (`RATE_LIMIT_KV`) dan Environment Variables (`TURNSTILE_SECRET_KEY`, `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `CF_SITE_TAG`) yang di-set di dashboard Cloudflare Pages.
+
 ## 2026-10-25
 
 ### Added

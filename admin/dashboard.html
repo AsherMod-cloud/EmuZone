@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Admin • EmuZone</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/assets/image/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+<link rel="stylesheet" href="/admin/css/dashboard.css">
+<link rel="stylesheet" href="/css/error-modal.css">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body class="auth-pending" data-requests-enabled="false">
+
+<div class="auth-loader"><div class="spinner"></div></div>
+
+<header class="topbar">
+  <div class="topbar-heading">
+    <h1>Dashboard Admin</h1>
+    <p id="greeting">Ringkasan aktivitas EmuZone</p>
+  </div>
+  <nav class="topbar-actions" aria-label="Navigasi admin">
+    <a class="back-btn" href="/"><span class="material-symbols-outlined">home</span><span class="hide-sm">Beranda</span></a>
+    <a class="back-btn" href="/admin/roadmap"><span class="material-symbols-outlined">map</span><span class="hide-sm">Roadmap</span></a>
+    <a class="back-btn" href="/admin/editor"><span class="material-symbols-outlined">add</span><span class="hide-sm">Tambah Game</a>
+    <button class="back-btn danger" id="logoutBtn"><span class="material-symbols-outlined">logout</span><span class="hide-sm">Keluar</span></button>
+  </nav>
+</header>
+
+<main class="dash">
+
+  <section class="stats">
+    <div class="stat" aria-busy="true">
+      <span class="material-symbols-outlined stat-icon">visibility</span>
+      <div><p>Kunjungan hari ini</p><h2 id="stToday" class="stat-loading" role="status" aria-live="polite">Memuat…</h2><small id="stTodayDiff">Mengambil kunjungan hari ini</small></div>
+    </div>
+    <div class="stat" aria-busy="true">
+      <span class="material-symbols-outlined stat-icon">trending_up</span>
+      <div><p>Kunjungan 30 hari</p><h2 id="stMonth" class="stat-loading" role="status" aria-live="polite">Memuat…</h2><small id="stAvg">Mengambil kunjungan 30 hari</small></div>
+    </div>
+    <div class="stat" aria-busy="true">
+      <span class="material-symbols-outlined stat-icon">sports_esports</span>
+      <div><p>Total game</p><h2 id="stGames" class="stat-loading" role="status" aria-live="polite">Memuat…</h2><small id="stGamesNew">Mengambil koleksi game</small></div>
+    </div>
+    <div class="stat" aria-busy="false">
+      <span class="material-symbols-outlined stat-icon">inbox</span>
+      <div><p>Request menunggu</p><h2 id="stReq" class="stat-unavailable" role="status" aria-live="polite">Belum aktif</h2><small id="stReqTotal">Fitur request belum tersedia</small></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div><h3>Traffic</h3><p>Jumlah kunjungan per hari</p></div>
+      <div class="seg" id="rangeSeg">
+        <button data-r="7">7 hari</button>
+        <button data-r="14" class="active">14 hari</button>
+        <button data-r="30">30 hari</button>
+      </div>
+    </div>
+    <div class="chart chart-state" id="chart" aria-busy="true"><div class="chart-message" role="status"><span class="spinner chart-spinner" aria-hidden="true"></span><strong>Memuat kunjungan…</strong></div></div>
+    <div class="top-pages" id="topPages" hidden></div>
+  </section>
+
+  <div class="grid-2">
+    <section class="panel">
+      <div class="panel-head">
+        <div><h3>Game per platform</h3><p>Distribusi koleksi</p></div>
+      </div>
+      <p id="platformNote" class="platform-note" hidden></p>
+      <div id="platformList" class="bars"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div><h3>Status game</h3><p>Kondisi kompatibilitas</p></div>
+      </div>
+      <div id="statusList" class="bars"></div>
+      <div class="panel-head mt"><div><h3>Game terbaru</h3></div></div>
+      <ul id="latestGames" class="list"></ul>
+    </section>
+  </div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div><h3>Request user</h3><p>Permintaan game dari pengunjung</p></div>
+      <div class="seg" id="reqSeg">
+        <button data-f="pending" class="active" type="button" disabled>Menunggu</button>
+        <button data-f="done" type="button" disabled>Selesai</button>
+        <button data-f="all" type="button" disabled>Semua</button>
+      </div>
+    </div>
+    <div id="reqList" class="req-list" aria-live="polite" aria-busy="false"><div class="request-state" role="status"><span class="material-symbols-outlined" aria-hidden="true">inbox</span><strong>Fitur request belum tersedia.</strong></div></div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="/js/firebase.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/error-modal.js"></script>
+<script src="/admin/js/dashboard.js"></script>
+</body>
+</html>

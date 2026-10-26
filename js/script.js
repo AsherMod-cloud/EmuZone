@@ -233,8 +233,7 @@ let isLoading = false;
 let queryVersion = 0;
 
 // ---------- DOM ----------
-const addBtn = document.getElementById("addBtn");
-const roadmapBtn = document.getElementById("roadmapBtn");
+const dashboardBtn = document.getElementById("dashboardBtn");
 const logoutLink = document.getElementById("logoutLink");
 const totalGamesBadge = document.getElementById("totalGamesBadge");
 const totalGamesCount = document.getElementById("totalGamesCount");
@@ -262,10 +261,11 @@ function updateTotalGamesStat() {
 onAdminStateChanged((loggedIn) => {
     isAdmin = loggedIn;
 
-    addBtn.style.display = loggedIn ? "inline-flex" : "none";
-    if (roadmapBtn) {
-        roadmapBtn.style.display = loggedIn ? "inline-flex" : "none";
+    // Ganti logika addBtn dan roadmapBtn dengan ini:
+    if (dashboardBtn) {
+        dashboardBtn.style.display = loggedIn ? "inline-flex" : "none";
     }
+    
     logoutLink.style.display = loggedIn ? "inline" : "none";
     totalGamesBadge.style.display = loggedIn ? "inline-flex" : "none";
 
@@ -515,7 +515,7 @@ function renderGrid(){
         filtered.forEach(g => {
             const displayConsole = canonicalConsoleName(g.console) || "Lainnya";
             const color = colorFor(displayConsole);
-            const detailUrl = `game.html?slug=${encodeURIComponent(g.slug || g.id)}`;
+            const detailUrl = `/game?slug=${encodeURIComponent(g.slug || g.id)}`;
             const card = document.createElement("div")
             card.className = "card";
             card.innerHTML = `
