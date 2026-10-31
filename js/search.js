@@ -126,7 +126,7 @@
         grid.innerHTML = "";
 
         if (!pageGames.length) {
-            showMessage("Tidak ada game yang cocok dengan pencarian ini.");
+            showMessage("Tidak ada game yang cocok dengan pencarian ini. klik tombol 'Request Game' untuk membuka Request form");
             resultInfo.textContent = "0 game ditemukan";
             return;
         }

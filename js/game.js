@@ -318,6 +318,14 @@ function render(game, id){
       ⬇ Download ${g.emulator || "Emulator"}
     </a>
   ` : ""}
+  <button 
+    data-feedback="report" 
+    data-game-title="${g.title}" 
+    data-game-slug="${g.slug || id}" 
+    data-game-console="${g.console || ''}"
+    class="btn danger" style="margin-top:20px; width:100%;">
+    ⚑ Report Game
+</button>
 </section>
 ` : ""}
 
@@ -414,7 +422,7 @@ function setupToolbar(g, id){
         .getElementById("editGameBtn")
         .onclick=()=>{
 
-            location.href=`/admin/editor?id=${id}`;
+            location.href=`/editor?id=${id}`;
 
         };
 
@@ -433,7 +441,7 @@ function setupToolbar(g, id){
                     ...copy,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                location.href = `/admin/editor?id=${newDoc.id}`;
+                location.href = `/editor?id=${newDoc.id}`;
             } catch(err) {
                 alert("Gagal duplikat: " + err.message);
             }
