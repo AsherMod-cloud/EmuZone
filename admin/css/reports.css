@@ -1,0 +1,59 @@
+/* Tambahan khusus halaman Reports; dasar tema dari dashboard.css */
+.back-btn.active{border-color:var(--primary);color:var(--primary)}
+.report-filters{display:grid;grid-template-columns:1fr 180px 200px;gap:10px;margin-bottom:16px}
+.field{background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font:inherit;font-size:14px;padding:10px 12px;min-height:44px}
+.field:focus-within,.field:focus{outline:none;border-color:var(--primary)}
+.search-field{display:flex;align-items:center;gap:8px}
+.search-field .material-symbols-outlined{color:var(--muted);font-size:20px}
+.search-field input{flex:1;min-width:0;background:none;border:0;color:var(--text);font:inherit;outline:none}
+
+.report-table{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.report-row{display:grid;grid-template-columns:1.2fr .9fr 2fr .8fr .8fr 1fr auto;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px}
+.report-row:last-child{border-bottom:0}
+.report-head{background:var(--bg);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.report-row:not(.report-head):hover{background:var(--surface-2)}
+.r-game b{font-weight:600;overflow-wrap:anywhere}
+.r-msg{color:var(--muted);overflow-wrap:anywhere}
+.r-date{color:var(--muted);font-size:12px}
+.r-date i{display:none;font-style:normal}
+.r-act .back-btn{padding:8px 12px}
+
+.badge.status-pending{color:var(--warn);border-color:rgba(245,192,78,.4)}
+.badge.status-in_progress{color:var(--primary);border-color:rgba(107,140,255,.4)}
+.badge.status-completed{color:var(--ok);border-color:rgba(78,211,138,.4)}
+
+.report-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px;z-index:300}
+.report-overlay[hidden]{display:none}
+.report-dialog{width:100%;max-width:560px;max-height:calc(100vh - 32px);overflow:auto;animation:reportIn .2s ease}
+@keyframes reportIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.detail-list{display:grid;gap:8px}
+.d-row{display:grid;grid-template-columns:140px 1fr;gap:12px;font-size:14px}
+.d-row dt{color:var(--muted)}
+.d-row a{color:var(--primary)}
+.d-label{font-size:13px;color:var(--muted);margin:18px 0 8px;font-weight:500}
+.d-message{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px 14px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}
+.d-status{width:fit-content;max-width:100%}
+.d-status button:disabled{cursor:default}
+.d-actions{margin-top:18px;display:flex;justify-content:flex-end}
+
+@media(max-width:900px){
+  .report-filters{grid-template-columns:1fr 1fr}
+  .search-field{grid-column:1/-1}
+  .report-table{border:0;gap:10px}
+  .report-head{display:none}
+  .report-row{grid-template-columns:1fr auto;border:1px solid var(--border);border-radius:14px;background:var(--bg);gap:6px 12px}
+  .report-row:last-child{border-bottom:1px solid var(--border)}
+  .r-game{grid-column:1}
+  .r-msg,.r-date{grid-column:1/-1}
+  .r-date i{display:inline}
+  .r-act{grid-column:1/-1}
+  .r-act .back-btn{width:100%;justify-content:center;min-height:44px}
+}
+@media(max-width:560px){
+  .report-filters{grid-template-columns:1fr}
+  .d-row{grid-template-columns:1fr;gap:2px}
+  .d-status{width:100%}.d-status button{flex:1;min-height:40px}
+  .d-actions .back-btn{width:100%;justify-content:center;min-height:44px}
+}
+@media(prefers-reduced-motion:reduce){.report-dialog{animation:none}}
+.report-row .badge,.detail-list .badge{margin-left:0;white-space:nowrap}

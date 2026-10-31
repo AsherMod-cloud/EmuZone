@@ -1,3 +1,24 @@
+## 2026-10-31
+
+### Added
+- **Unified Feedback System:** Menambahkan form Request Game dan Report Game yang reusable di seluruh halaman menggunakan modal dinamis (`js/feedback.js`).
+- **Feedback API Endpoint (`functions/api/feedback.js`):** Endpoint Cloudflare Functions untuk menerima data feedback, menyimpannya ke Firestore, dan mengirim notifikasi real-time ke Telegram Admin.
+- **Modul Retensi Terpadu (`js/report-retention.js`):** Modul independen untuk menghitung masa aktif data dengan masa retensi otomatis 15 hari. Modul ini sekarang digunakan untuk **Request** dan **Report**.
+- **Manajemen Request & Report di Dashboard:** Integrasi data feedback ke dalam Dashboard Admin untuk memantau, menandai selesai, dan menghapus data.
+- **Retensi Otomatis 15 Hari:** Mengisi field `completedAt` dan `expiresAt` saat status berubah menjadi selesai/done. Penghapusan fisik data didelegasikan ke **Firestore TTL (Time-to-Live) Policy** di collection `requests` dan `reports`.
+- **Firestore Security Rules:** Menambahkan aturan ketat untuk collection `requests` dan `reports`.
+
+### Changed
+- **Peningkatan UI/UX Modal Feedback:** Form Request dan Report sekarang tampil dalam satu modal yang beradaptasi secara dinamis berdasarkan tipe aksi.
+- **Posisi Tombol Request Game:** Dipindahkan ke area dekat kolom pencarian katalog.
+- **Posisi Tombol Report Game:** Ditempatkan di bawah bagian unduhan emulator pada halaman detail game.
+- **Update Footer:** Menghapus instruksi manual request via WhatsApp yang sudah usang.
+- **Empty Search Results:** Menambahkan tombol aksi langsung (Call-to-Action) untuk melakukan Request Game saat hasil pencarian kosong.
+
+### Security
+- Menyiapkan *Environment Variables* di Cloudflare Pages untuk `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ADMIN_ID`, dan kredensial API Cloudflare.
+- Mencegah *spam* atau *malicious input* pada form feedback dengan validasi tipe data di CF Function dan Firestore Rules.
+
 ## 2026-10-26
 
 ### Added

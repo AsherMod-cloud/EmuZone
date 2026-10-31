@@ -174,3 +174,5 @@ body.auth-pending .topbar,body.auth-pending .dash{visibility:hidden}
 .topbar-actions .back-btn{gap:4px;font-size:11px;padding:8px 4px}
 .topbar-actions .material-symbols-outlined{font-size:18px;flex-shrink:0}
 }
+
+.panel-link{color:var(--primary);text-decoration:none}.panel-link:hover{text-decoration:underline}

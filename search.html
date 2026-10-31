@@ -15,6 +15,7 @@
 
 <link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" href="css/search.css">
+<link rel="stylesheet" href="css/feedback.css">
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -45,17 +46,22 @@
         <p>Cari berdasarkan judul game atau ID dokumen.</p>
     </section>
 
-    <form id="searchForm" class="search-form">
-        <input
-            id="searchInput"
-            type="search"
-            name="q"
-            placeholder="Cari judul atau ID game..."
-            autocomplete="off"
-            required
-        >
-        <button type="submit">CARI</button>
-    </form>
+    <div class="feedback-tools">
+      <form id="searchForm" class="search-form">
+          <input
+              id="searchInput"
+              type="search"
+              name="q"
+              placeholder="Cari judul atau ID game..."
+              autocomplete="off"
+              required
+          >
+          <button type="submit">CARI</button>
+      </form>
+      <button type="button" class="feedback-request-btn" data-feedback="request">
+    + Request Game
+      </button>
+    </div>
 
     <div class="search-info">
         <span id="resultInfo">Masukkan kata pencarian.</span>
@@ -75,15 +81,16 @@
 </main>
 
 <footer>
-    <div>Dikelola oleh <strong>AsherMod</strong> — request game lewat WhatsApp, dijawab manual.</div>
+    <div>Dikelola oleh <strong>AsherMod</strong> — koleksi game dan resource emulator untuk komunitas.</div>
     <div class="foot-links">
-        <a href="https://wa.me/6283872646423" target="_blank" rel="noopener">Request Game</a>
+        <a href="https://asher-mod-bio.pages.dev" target="_blank" rel="noopener">Saluran Lainnya</a>
         <a href="/">← Balik ke katalog</a>
     </div>
 </footer>
 
 <script src="js/firebase.js"></script>
 <script src="js/search.js"></script>
+<script src="js/feedback.js"></script>
 
 </body>
 </html>

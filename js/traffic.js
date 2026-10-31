@@ -3,7 +3,8 @@
 (function () {
   try {
     if (typeof db === "undefined") return;
-    const page = location.pathname.split("/")[1] || "home";
+    let page = location.pathname.split("/")[1] || "home";
+    if (page === "index.html" || page === "") page = "home";
     const key = "ez_tr_" + page + "_" + location.search;
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, "1");

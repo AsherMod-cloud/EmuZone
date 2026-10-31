@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Reports — Admin EmuZone</title>
+<link rel="icon" href="/assets/image/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+<link rel="stylesheet" href="/admin/css/dashboard.css">
+<link rel="stylesheet" href="/admin/css/reports.css">
+<link rel="stylesheet" href="/admin/css/sidebar.css">
+<link rel="stylesheet" href="/css/error-modal.css">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body class="auth-pending">
+
+<div class="auth-loader"><div class="spinner"></div></div>
+
+<header class="topbar">
+  <div class="topbar-heading">
+    <h1>Reports</h1>
+    <p>Laporan masalah dari pengguna</p>
+  </div>
+</header>
+
+<main class="dash">
+  <section class="stats">
+    <div class="stat" aria-busy="true"><span class="material-symbols-outlined stat-icon">flag</span>
+      <div><p>Total reports</p><h2 id="stTotal" class="stat-loading" role="status">Memuat…</h2><small>Laporan yang masih tersimpan</small></div></div>
+    <div class="stat" aria-busy="true"><span class="material-symbols-outlined stat-icon">schedule</span>
+      <div><p>Pending</p><h2 id="stPending" class="stat-loading" role="status">Memuat…</h2><small>Belum ditangani</small></div></div>
+    <div class="stat" aria-busy="true"><span class="material-symbols-outlined stat-icon">autorenew</span>
+      <div><p>Diproses</p><h2 id="stProgress" class="stat-loading" role="status">Memuat…</h2><small>Sedang dikerjakan</small></div></div>
+    <div class="stat" aria-busy="true"><span class="material-symbols-outlined stat-icon">task_alt</span>
+      <div><p>Selesai</p><h2 id="stDone" class="stat-loading" role="status">Memuat…</h2><small>Terhapus otomatis ±15 hari setelah selesai</small></div></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div><h3>Daftar laporan</h3><p>Diurutkan dari yang terbaru</p></div>
+    </div>
+    <div class="report-filters">
+      <label class="field search-field"><span class="material-symbols-outlined" aria-hidden="true">search</span>
+        <input id="fSearch" type="search" placeholder="Cari nama game atau isi laporan" aria-label="Cari laporan"></label>
+      <select id="fStatus" class="field" aria-label="Filter status">
+        <option value="all">Semua status</option>
+        <option value="pending">Pending</option>
+        <option value="in_progress">Diproses</option>
+        <option value="completed">Selesai</option>
+      </select>
+      <select id="fCategory" class="field" aria-label="Filter kategori">
+        <option value="all">Semua kategori</option>
+        <option value="broken_link">Link rusak</option>
+        <option value="not_playable">Tidak bisa dimainkan</option>
+        <option value="wrong_info">Info salah</option>
+        <option value="other">Lainnya</option>
+      </select>
+    </div>
+    <div id="reportList" aria-live="polite" aria-busy="true"></div>
+  </section>
+</main>
+
+<div class="report-overlay" id="detailOverlay" hidden>
+  <div class="report-dialog panel" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+    <div class="panel-head">
+      <div><h3 id="detailTitle">Detail laporan</h3><p id="detailSub"></p></div>
+      <button class="icon-btn" id="detailClose" type="button" aria-label="Tutup"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div id="detailBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/js/firebase.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/error-modal.js"></script>
+<script src="/admin/js/admin-utils.js"></script>
+<script src="/admin/js/report-retention.js"></script>
+<script src="/admin/js/sidebar.js"></script>
+<script src="/admin/js/reports.js"></script>
+</body>
+</html>

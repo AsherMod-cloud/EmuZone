@@ -3,17 +3,10 @@ guardAdminPage((user, profile) => initDashboard(profile));
 function initDashboard(profile) {
   const $ = id => document.getElementById(id);
   const fmt = n => Number(n || 0).toLocaleString("id-ID");
-  // Aktifkan hanya setelah form request dan izin akses admin tersedia.
-  const requestsEnabled = document.body.dataset.requestsEnabled === "true";
-  const requestsRef = requestsEnabled ? db.collection("requests") : null;
-  let unsubscribeRequests = null;
   const trafficRef = db.collection("traffic");
   let trafficDays = [];
   let range = 14;
-  let reqFilter = "pending";
-  let requests = [];
   let trafficState = "loading";
-  let requestState = requestsEnabled ? "loading" : "unavailable";
 
   function statState(valueId, detailId, state, value, detail) {
     const el = $(valueId);
@@ -24,7 +17,6 @@ function initDashboard(profile) {
     $(detailId).textContent = detail;
   }
 
-  $("logoutBtn").onclick = () => logout();
 
   function toast(msg, err) {
     const t = $("toast");
@@ -246,110 +238,6 @@ async function loadTraffic() {
     }
   }
 
-  // ---------- REQUESTS ----------
-  function loadRequests() {
-    if (unsubscribeRequests) {
-      unsubscribeRequests();
-      unsubscribeRequests = null;
-    }
-    $("reqSeg").querySelectorAll("button").forEach(button => { button.disabled = !requestsEnabled; });
-    if (!requestsRef) {
-      requestState = "unavailable";
-      statState("stReq", "stReqTotal", "unavailable", null, "Fitur request belum tersedia");
-      renderRequests();
-      return;
-    }
-    requestState = "loading";
-    statState("stReq", "stReqTotal", "loading", null, "Mengambil request user");
-    renderRequests();
-    try {
-      unsubscribeRequests = requestsRef.orderBy("createdAt", "desc").limit(200).onSnapshot(snap => {
-        requests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const pending = requests.filter(r => r.status !== "done").length;
-        requestState = "success";
-        statState("stReq", "stReqTotal", "success", pending, `${fmt(requests.length)} request dimuat`);
-        renderRequests();
-      }, requestFailed);
-    } catch (err) {
-      requestFailed(err);
-    }
-  }
-
-  function requestFailed(err) {
-    console.error(err);
-    requestState = "error";
-    statState("stReq", "stReqTotal", "error", null, "Data request tidak tersedia");
-    renderRequests();
-  }
-
-  window.addEventListener("pagehide", () => {
-    if (unsubscribeRequests) unsubscribeRequests();
-  });
-
-  function renderRequests() {
-    const container = $("reqList");
-    container.setAttribute("aria-busy", String(requestState === "loading"));
-    if (requestState !== "success") {
-      container.innerHTML = requestState === "unavailable"
-        ? `<div class="request-state" role="status"><span class="material-symbols-outlined" aria-hidden="true">inbox</span><strong>Fitur request belum tersedia.</strong></div>`
-        : requestState === "loading"
-          ? `<div class="request-state" role="status"><span class="spinner chart-spinner" aria-hidden="true"></span><strong>Memuat request...</strong></div>`
-          : `<div class="request-state request-error" role="alert"><span class="material-symbols-outlined" aria-hidden="true">error_outline</span><strong>Request gagal dimuat.</strong><button class="back-btn" data-act="retry" type="button"><span class="material-symbols-outlined" aria-hidden="true">refresh</span>Coba lagi</button></div>`;
-      return;
-    }
-    const list = requests.filter(r => reqFilter === "all" || (reqFilter === "done" ? r.status === "done" : r.status !== "done"));
-    if (!list.length) {
-      const message = !requests.length ? "Belum ada request dari pengunjung." : reqFilter === "pending" ? "Tidak ada request yang menunggu." : "Belum ada request yang selesai.";
-      container.innerHTML = `<div class="request-state" role="status"><span class="material-symbols-outlined" aria-hidden="true">inbox</span><strong>${message}</strong></div>`;
-      return;
-    }
-    $("reqList").innerHTML = list.map(r => `
-      <div class="req">
-        <div>
-          <h4>${esc(r.title || r.game || "Tanpa judul")}${r.status === "done" ? `<span class="badge done">Selesai</span>` : ""}${r.platform ? `<span class="badge">${esc(r.platform)}</span>` : ""}</h4>
-          <div class="meta">${esc(r.name || "Anonim")} · ${relTime(toDate(r.createdAt))}</div>
-          ${r.note || r.message ? `<div class="note">${esc(r.note || r.message)}</div>` : ""}
-        </div>
-        <div class="req-actions">
-          <button class="icon-btn" data-act="toggle" data-id="${r.id}" title="${r.status === "done" ? "Tandai menunggu" : "Tandai selesai"}">
-            <span class="material-symbols-outlined">${r.status === "done" ? "undo" : "check"}</span></button>
-          <button class="icon-btn del" data-act="del" data-id="${r.id}" title="Hapus"><span class="material-symbols-outlined">delete</span></button>
-        </div>
-      </div>`).join("");
-  }
-
-  $("reqSeg").addEventListener("click", e => {
-    const b = e.target.closest("button");
-    if (!b || b.disabled) return;
-    reqFilter = b.dataset.f;
-    $("reqSeg").querySelectorAll("button").forEach(x => x.classList.toggle("active", x === b));
-    renderRequests();
-  });
-
-  $("reqList").addEventListener("click", async e => {
-    const b = e.target.closest("button[data-act]");
-    if (!b) return;
-    if (b.dataset.act === "retry") { loadRequests(); return; }
-    if (!requestsRef || requestState !== "success") return;
-    const r = requests.find(x => x.id === b.dataset.id);
-    if (!r) return;
-    try {
-      if (b.dataset.act === "del") {
-        if (!confirm(`Hapus request "${r.title || r.game}"?`)) return;
-        await requestsRef.doc(r.id).delete();
-        toast("Request dihapus.");
-      } else {
-        const done = r.status !== "done";
-        await requestsRef.doc(r.id).update({ status: done ? "done" : "pending" });
-        toast(done ? "Ditandai selesai." : "Dikembalikan ke menunggu.");
-      }
-    } catch (err) {
-      console.error(err);
-      toast("Aksi gagal. Cek izin Firestore.", true);
-    }
-  });
-
   loadTraffic();
   loadGames();
-  loadRequests();
 }

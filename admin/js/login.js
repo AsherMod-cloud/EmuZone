@@ -65,11 +65,7 @@ loginBtn.addEventListener("click", async () => {
     setLoginBusy(true);
 
     try {
-    // --- AWAL KODE BARU ---
-    const isLocalhost = location.hostname === "localhost" || location.hostname === "127.0.0.1";
-    
-    if (!isLocalhost) {
-        // Panggil CF Function HANYA kalau udah di production (emuzone.my.id)
+        // 2. Verifikasi Turnstile & Rate Limit via Cloudflare Function
         const verifyRes = await fetch("/api/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -81,30 +77,26 @@ loginBtn.addEventListener("click", async () => {
         if (!verifyData.success) {
             throw new Error(verifyData.error || "Verifikasi keamanan gagal.");
         }
-    } else {
-        console.warn("⚠️ Mode Localhost: Bypass verifikasi Turnstile & Rate Limit CF.");
-    }
-    // --- AKHIR KODE BARU ---
 
-    // 2. Jika lolos CF Function (atau lagi di localhost), lanjut ke Firebase Auth
-    const remember = document.getElementById("rememberMe").checked;
-    const persistence = remember
-        ? firebase.auth.Auth.Persistence.LOCAL
-        : firebase.auth.Auth.Persistence.SESSION;
+        // 3. Firebase Authentication
+        const remember = document.getElementById("rememberMe").checked;
+        const persistence = remember
+            ? firebase.auth.Auth.Persistence.LOCAL
+            : firebase.auth.Auth.Persistence.SESSION;
 
-    await auth.setPersistence(persistence);
-    const credential = await auth.signInWithEmailAndPassword(account.email, password);
+        await auth.setPersistence(persistence);
+        const credential = await auth.signInWithEmailAndPassword(account.email, password);
 
-    if (!isAdminUser(credential.user)) {
-        await auth.signOut();
-        throw new Error("AUTH_ACCOUNT_NOT_ALLOWED");
-    }
+        // 4. Verifikasi Akses Admin
+        if (!isAdminUser(credential.user)) {
+            await auth.signOut();
+            throw new Error("AUTH_ACCOUNT_NOT_ALLOWED");
+        }
 
-    // Sukses!
-    window.location.replace("/admin/dashboard.html"); // Atau index.html
-    
-} catch (err) {
-// ... sisa kode error handling lo ...
+        // 5. Sukses
+        window.location.replace("/");
+        
+    } catch (err) {
         console.error("Login Error:", err);
         
         // Tampilkan pesan error yang sesuai

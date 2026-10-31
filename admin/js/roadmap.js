@@ -7,7 +7,6 @@ const roadmapMeta = document.getElementById("roadmapMeta");
 const editBtn = document.getElementById("editRoadmapBtn");
 const cancelBtn = document.getElementById("cancelRoadmapBtn");
 const saveBtn = document.getElementById("saveRoadmapBtn");
-const logoutBtn = document.getElementById("logoutBtn");
 const toast = document.getElementById("roadmapToast");
 const exportBtn = document.getElementById("exportRoadmapBtn");
 const exportOverlay = document.getElementById("exportOverlay");
@@ -480,7 +479,6 @@ saveBtn.addEventListener("click", async () => {
   }
 });
 
-logoutBtn.addEventListener("click", () => logout());
 
 // ---- Export listeners ----
 exportBtn.addEventListener("click", () => {
