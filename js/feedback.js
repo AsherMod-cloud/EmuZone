@@ -61,38 +61,50 @@
   }
 
   function setMode(type, context = {}) {
-    activeType = type === "report" ? "report" : "request";
-    activeContext = context;
-    const isReport = activeType === "report";
-    const overlay = document.getElementById("feedbackOverlay");
-    const title = document.getElementById("feedbackTitle");
-    const intro = document.getElementById("feedbackIntro");
-    const submit = document.getElementById("feedbackSubmit");
-    const status = document.getElementById("feedbackStatus");
-    const form = document.getElementById("feedbackForm");
+  activeType = type === "report" ? "report" : "request";
+  activeContext = context;
+  const isReport = activeType === "report";
+  const overlay = document.getElementById("feedbackOverlay");
+  const title = document.getElementById("feedbackTitle");
+  const intro = document.getElementById("feedbackIntro");
+  const submit = document.getElementById("feedbackSubmit");
+  const status = document.getElementById("feedbackStatus");
+  const form = document.getElementById("feedbackForm");
 
-    // GANTI BAGIAN INI DI feedback.js:
-		overlay.querySelectorAll(".request-only").forEach(node => { 
-		    node.style.display = isReport ? "none" : "flex"; 
-		});
-		overlay.querySelectorAll(".report-only").forEach(node => { 
-		    node.style.display = !isReport ? "none" : "flex"; 
-		});
-    title.textContent = isReport ? "Report Game" : "Request Game";
-    intro.textContent = isReport ? "Bantu kami memperbaiki data atau link game ini." : "Belum menemukan game yang kamu cari? Kirim request dan akan kami cek.";
-    submit.textContent = isReport ? "Kirim Report" : "Kirim Request";
-    status.textContent = "";
-    status.className = "feedback-status";
-    form.reset();
+  // Tampilkan / sembunyikan field
+  overlay.querySelectorAll(".request-only").forEach(node => { 
+      node.style.display = isReport ? "none" : "flex"; 
+  });
+  overlay.querySelectorAll(".report-only").forEach(node => { 
+      node.style.display = !isReport ? "none" : "flex"; 
+  });
 
-    if (isReport) {
-    document.getElementById("feedbackGameTitle").value =
-        context.title || "Game";
-} else {
-    document.getElementById("feedbackTitleInput").value =
-        context.title || "";
-    }
+  // ⬇️ TAMBAHIN BAGIAN INI BUAT FIX BUG REQUIRED ⬇️
+  const titleInput = document.getElementById("feedbackTitleInput");
+  const categoryInput = document.getElementById("feedbackCategory");
+
+  if (isReport) {
+      if (titleInput) titleInput.required = false; // Jangan wajibin judul request
+      if (categoryInput) categoryInput.required = true; // Wajibin kategori
+  } else {
+      if (titleInput) titleInput.required = true;
+      if (categoryInput) categoryInput.required = false;
   }
+  // ⬆️ SAMPAI SINI ⬆️
+
+  title.textContent = isReport ? "Report Game" : "Request Game";
+  intro.textContent = isReport ? "Bantu kami memperbaiki data atau link game ini." : "Belum menemukan game yang kamu cari? Kirim request dan akan kami cek.";
+  submit.textContent = isReport ? "Kirim Report" : "Kirim Request";
+  status.textContent = "";
+  status.className = "feedback-status";
+  form.reset();
+
+  if (isReport) {
+      document.getElementById("feedbackGameTitle").value = context.title || "Game";
+  } else {
+      document.getElementById("feedbackTitleInput").value = context.title || "";
+  }
+}
 
   function openModal(type, context) {
     ensureModal();
