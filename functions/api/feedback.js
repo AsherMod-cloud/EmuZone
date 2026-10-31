@@ -26,14 +26,14 @@ export async function onRequestPost(context) {
             fields.title = { stringValue: title || "Tanpa Judul" };
             fields.platform = { stringValue: platform || "-" };
             
-            tgMessage = `📩 *REQUEST GAME BARU*\n\n🎮 *Game:* ${title}\n🕹️ *Platform:* ${platform || "-"}\n👤 *Oleh:* ${name || "Anonim"}\n📝 *Pesan:* ${message}`;
+            tgMessage = `📩 <b>REQUEST GAME BARU</b>\n\n🎮 Game: ${title}\n🕹️ Platform: ${platform || "-"}\n👤 Oleh: ${name || "Anonim"}\n📝 Pesan: ${message}`;
         } else {
             fields.gameTitle = { stringValue: gameTitle || "Game" };
             fields.gameSlug = { stringValue: gameSlug || "-" };
             fields.gameConsole = { stringValue: gameConsole || "-" };
             fields.category = { stringValue: category || "other" };
             
-            tgMessage = `⚠️ *LAPORAN LINK RUSAK*\n\n🎮 *Game:* ${gameTitle} (${gameConsole})\n🆔 *Slug:* ${gameSlug}\n📌 *Kategori:* ${category}\n👤 *Oleh:* ${name || "Anonim"}\n📝 *Pesan:* ${message}`;
+            tgMessage = `⚠️ <b>LAPORAN LINK RUSAK</b>\n\n🎮 Game: ${gameTitle} (${gameConsole})\n🆔 Slug: ${gameSlug}\n📌 Kategori: ${category}\n👤 Oleh: ${name || "Anonim"}\n📝 Pesan: ${message}`;
         }
 
         // 1. Simpan ke Firestore
@@ -45,24 +45,34 @@ export async function onRequestPost(context) {
 
         if (!fsRes.ok) throw new Error("Gagal menyimpan ke database.");
 
-        // 2. Kirim Notifikasi ke Telegram
-        await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                chat_id: env.TELEGRAM_ADMIN_ID,
-                text: tgMessage,
-                parse_mode: "Markdown"
-            })
-        });
+				// 2. Kirim Notifikasi ke Telegram
+				try {
+				    const tgRes = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+				        method: "POST",
+				        headers: { "Content-Type": "application/json" },
+ 				        body: JSON.stringify({
+ 		            chat_id: env.TELEGRAM_ADMIN_ID,
+  	            text: tgMessage,
+		            parse_mode: "HTML" // <--- GANTI JADI HTML BIAR GAK ERROR
+			        })
+		    });
 
-        return new Response(JSON.stringify({ 
-            success: true, 
-            message: type === "request" ? "Request berhasil dikirim!" : "Laporan berhasil dikirim!"
-        }), { 
-            status: 200, 
-            headers: { "Content-Type": "application/json" } 
-        });
+		    // Cek kalau Telegram nolak pesannya
+		    if (!tgRes.ok) {
+		        const errData = await tgRes.json();
+		        console.error("Telegram Error:", errData);
+		    }
+		} catch (tgError) {
+		    console.error("Gagal nembak API Telegram:", tgError);
+				}
+
+			return new Response(JSON.stringify({ 
+			    success: true, 
+			    message: type === "request" ? "Request berhasil dikirim!" : "Laporan berhasil dikirim!"
+		}), { 
+		    status: 200, 
+		    headers: { "Content-Type": "application/json" } 
+		});
 
     } catch (err) {
         return new Response(JSON.stringify({ error: err.message }), { 
