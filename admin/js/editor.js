@@ -363,7 +363,7 @@ saveBtn.addEventListener("click", async () => {
     } else {
       await gamesRef.add({ ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
     }
-    window.location.href = "/";
+    window.location.href = "/admin/dashboard";
   } catch (err) {
     alert("Gagal simpan: " + err.message);
     saveBtn.disabled = false;
@@ -372,8 +372,8 @@ saveBtn.addEventListener("click", async () => {
 });
 
 // ---------- Cancel / Back ----------
-cancelBtn.addEventListener("click", () => window.location.href = "/");
-backBtn.addEventListener("click", () => window.location.href = "/");
+cancelBtn.addEventListener("click", () => window.location.href = "/admin/dashboard");
+backBtn.addEventListener("click", () => window.location.href = "/admin/dashboard");
 // Force remove loader & auth-pending
 document.querySelector(".auth-loader")?.remove();
 document.body.classList.remove("auth-pending");
