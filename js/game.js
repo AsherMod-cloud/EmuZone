@@ -422,7 +422,7 @@ function setupToolbar(g, id){
         .getElementById("editGameBtn")
         .onclick=()=>{
 
-            location.href=`/editor?id=${id}`;
+            location.href=`/admin/editor?id=${id}`;
 
         };
 
@@ -433,7 +433,20 @@ function setupToolbar(g, id){
             if(!confirm("Duplikat game ini? Kamu bakal diarahkan ke editor buat nyesuain judul/link salinannya.")) return;
 
             const copy = { ...g };
-            delete copy.slug; // biar slug baru otomatis dibikin pas disimpan di editor
+            
+            // 1. Hapus slug biar bikin baru
+            delete copy.slug; 
+            
+            // 2. Hapus ID dokumen lama (biar gak bentrok)
+            delete copy.id; 
+
+            // 3. BERSIHKAN SEMUA FIELD UNDEFINED (Solusi utama error kemarin)
+            Object.keys(copy).forEach(key => {
+                if (copy[key] === undefined) {
+                    delete copy[key];
+                }
+            });
+
             copy.title = copy.title + " (Copy)";
 
             try {
@@ -441,7 +454,10 @@ function setupToolbar(g, id){
                     ...copy,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                location.href = `/editor?id=${newDoc.id}`;
+                
+                // Redirect ke halaman editor dengan ID baru
+                location.href = `/admin/editor?id=${newDoc.id}`;
+                
             } catch(err) {
                 alert("Gagal duplikat: " + err.message);
             }
@@ -459,7 +475,8 @@ function setupToolbar(g, id){
 
                     alert("Game berhasil dihapus.");
 
-                    location.href="/";
+                    // Opsional: Lempar ke dashboard biar lebih rapi
+                    location.href="/admin/dashboard";
 
                 });
 
