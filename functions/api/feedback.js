@@ -9,6 +9,27 @@ export async function onRequestPost(context) {
             throw new Error("Tipe feedback tidak valid.");
         }
 
+                // ==========================================
+        // HELPER & CONFIG UNTUK FORMAT TELEGRAM
+        // ==========================================
+        function escapeTgHtml(text) {
+            if (!text) return "-";
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+        }
+
+        const categoryMap = {
+            "broken_link": "Link Rusak",
+            "not_playable": "Tidak Bisa Dimainkan",
+            "wrong_info": "Informasi Salah",
+            "other": "Lainnya"
+        };
+
+        const safeName = escapeTgHtml(name || "Anonim");
+        const safeMessage = escapeTgHtml(message);
+
         const collectionName = type === "report" ? "reports" : "requests";
         const firestoreUrl = `https://firestore.googleapis.com/v1/projects/emulator-games-id-bf695/databases/(default)/documents/${collectionName}`;
 
@@ -22,18 +43,39 @@ export async function onRequestPost(context) {
 
         let tgMessage = "";
 
+        // ==========================================
+        // SUSUN FORMAT PESAN TELEGRAM
+        // ==========================================
         if (type === "request") {
             fields.title = { stringValue: title || "Tanpa Judul" };
             fields.platform = { stringValue: platform || "-" };
             
-            tgMessage = `📩 <b>REQUEST GAME BARU</b>\n\n🎮 Game: ${title}\n🕹️ Platform: ${platform || "-"}\n👤 Oleh: ${name || "Anonim"}\n📝 Pesan: ${message}`;
+            tgMessage = `📩 <b>REQUEST GAME BARU</b>
+━━━━━━━━━━━━━━━━━━━━
+🎮 <b>Game:</b> ${escapeTgHtml(title)}
+🕹️ <b>Platform:</b> ${escapeTgHtml(platform)}
+👤 <b>Oleh:</b> ${safeName}
+━━━━━━━━━━━━━━━━━━━━
+📝 <b>Pesan:</b>
+<i>${safeMessage}</i>`;
+
         } else {
             fields.gameTitle = { stringValue: gameTitle || "Game" };
             fields.gameSlug = { stringValue: gameSlug || "-" };
             fields.gameConsole = { stringValue: gameConsole || "-" };
             fields.category = { stringValue: category || "other" };
             
-            tgMessage = `⚠️ <b>LAPORAN LINK RUSAK</b>\n\n🎮 Game: ${gameTitle} (${gameConsole})\n🆔 Slug: ${gameSlug}\n📌 Kategori: ${category}\n👤 Oleh: ${name || "Anonim"}\n📝 Pesan: ${message}`;
+            const humanCategory = categoryMap[category] || category;
+            
+            tgMessage = `⚠️ <b>LAPORAN MASALAH</b>
+━━━━━━━━━━━━━━━━━━━━
+🎮 <b>Game:</b> ${escapeTgHtml(gameTitle)} (${escapeTgHtml(gameConsole)})
+🔗 <b>Slug:</b> <code>${escapeTgHtml(gameSlug)}</code>
+📌 <b>Kategori:</b> ${escapeTgHtml(humanCategory)}
+👤 <b>Oleh:</b> ${safeName}
+━━━━━━━━━━━━━━━━━━━━
+📝 <b>Pesan:</b>
+<i>${safeMessage}</i>`;
         }
 
         // 1. Simpan ke Firestore
