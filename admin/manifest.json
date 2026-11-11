@@ -1,0 +1,21 @@
+{
+  "name": "EmuZone Admin",
+  "short_name": "EmuZone Admin",
+  "start_url": "/admin/dashboard",
+  "scope": "/admin/",
+  "display": "standalone",
+  "background_color": "#1c1b1f",
+  "theme_color": "#1c1b1f",
+  "icons": [
+    {
+      "src": "/assets/image/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/image/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
