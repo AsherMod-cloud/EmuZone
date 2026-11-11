@@ -1,8 +1,11 @@
 {
   "name": "EmuZone Admin",
   "short_name": "EmuZone Admin",
+  "description": "Koleksi game emulator klasik, screenshot, emulator, dan resource dalam satu tempat."
   "start_url": "/admin/dashboard",
   "scope": "/admin/",
+  "orientation": "portrait",
+  "lang": "id-ID"
   "display": "standalone",
   "background_color": "#1c1b1f",
   "theme_color": "#1c1b1f",
