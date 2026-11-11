@@ -84,6 +84,8 @@ const DEFAULT_ROADMAP = [
   { id: "catalog-featured-game",         category: "Game Catalog",   title: "Featured Game" },
   { id: "catalog-content-warning",       category: "Game Catalog",   title: "Content warning modal" },
   { id: "catalog-warning-confirmation",  category: "Game Catalog",   title: "Warning confirmation flow" },
+  { id: "catalog-request-modal",        category: "Game Catalog",    title: "Request Game Modal Form" },
+  { id: "catalog-report-modal",         category: "Game Catalog",    title: "Report Broken Link Modal Form" },
   { id: "catalog-download-counter",      category: "Game Catalog",   title: "Download Counter" },
   { id: "catalog-game-rating",           category: "Game Catalog",   title: "Game Rating" },
   { id: "catalog-size-formatter",        category: "Game Catalog",   title: "Auto Game Size Formatter" },
@@ -168,6 +170,7 @@ const DEFAULT_ROADMAP = [
   { id: "ux-empty-state",                category: "UI / UX",        title: "Empty state illustration" },
   { id: "ux-mobile-navigation",          category: "UI / UX",        title: "Mobile navigation" },
   { id: "ux-light-mode",                 category: "UI / UX",        title: "Dark / Light mode" },
+  { id: "ux-pwa",                      category: "UI / UX",        title: "Progressive Web App (PWA) Admin & Publik" },
 
   // SEO
   { id: "seo-meta-description",          category: "SEO",            title: "Meta description" },
@@ -198,6 +201,8 @@ const DEFAULT_ROADMAP = [
   { id: "security-session-timeout",      category: "Security",       title: "Session timeout" },
   { id: "security-backup",               category: "Security",       title: "Backup database" },
   { id: "security-recovery",             category: "Security",       title: "Recovery system" },
+  { id: "security-turnstile",             category: "Security",       title: "Cloudflare Turnstile Login" },
+  { id: "security-server-ratelimit",       category: "Security",     title: "Server-side Rate Limiting (KV)" },
 
   // Deployment
   { id: "deployment-cloudflare",         category: "Deployment",     title: "Cloudflare Pages" },
@@ -244,6 +249,9 @@ const DEFAULT_ROADMAP = [
   { id: "workspace-changelog",           category: "Owner Workspace", title: "Development changelog" },
   { id: "workspace-export",              category: "Owner Workspace", title: "Export roadmap" },
   { id: "workspace-import",              category: "Owner Workspace", title: "Import roadmap"},
+  { id: "workspace-feedback-manage",    category: "Owner Workspace", title: "Feedback Management (Dashboard Request/Report)" },
+{ id: "workspace-feedback-telegram",     category: "Owner Workspace", title: "Telegram Notifier for Feedback" },
+{ id: "workspace-stats-api",              category: "Owner Workspace", title: "CF Analytics API Endpoint (/api/stats)" },
 
   // Community
   { id: "community-bookmark",            category: "Community",      title: "Favorite / Bookmark" },

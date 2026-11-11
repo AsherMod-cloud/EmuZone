@@ -1,3 +1,25 @@
+## 2026-11-11
+
+### Added
+- **Progressive Web App (PWA) untuk Admin & Publik:**
+  - Menambahkan konfigurasi PWA terpisah untuk halaman admin (`/admin/manifest.json` & `/admin/admin-sw.js`). Admin sekarang bisa meng-*install* Dashboard langsung ke *home screen* HP tanpa harus lewat homepage.
+  - Menambahkan `site.webmanifest` dan `favicon.ico` di root directory untuk mendukung PWA di sisi publik.
+- **Favicon & Manifest Tags:** Menambahkan tag `<link rel="manifest">`, `apple-touch-icon`, dan favicon ke seluruh halaman HTML utama dan admin agar tampilan tab browser dan *install prompt* konsisten.
+
+### Changed
+- **Update Format Notifikasi Telegram:** Memperbarui *payload* pesan di `functions/api/feedback.js` agar tampilannya jauh lebih rapi dan profesional.
+  - Menggunakan *separator line* (`━━━`), `<b>` untuk *bold*, dan `<i>` untuk teks miring.
+  - Menambahkan fitur *mapping* kategori laporan (misal: `not_playable` menjadi "Tidak Bisa Dimainkan").
+  - Slug game sekarang dibungkus dalam tag `<code>` agar bisa langsung di-*tap* untuk di-*copy* dari Telegram.
+- **Alur Kerja Editor:** Setelah berhasil menyimpan game (Save) atau membatalkan (Cancel/Back), halaman editor sekarang otomatis mengarahkan kembali ke `/admin/dashboard` alih-alih ke homepage publik. Ini menjaga admin tetap berada di dalam area kerja (workspace).
+
+### Fixed
+- **Fixed Bug Duplikat Game (`game.js`):** Menambahkan sanitasi data (menghapus field `undefined` seperti `edition` atau `version` yang kosong) sebelum menyalin ke Firestore. Juga menghapus `id` lama pada objek salinan agar Firestore tidak kebingungan dan melempar error `Unsupported field value: undefined`.
+- **Fixed Tombol Report Game Tidak Berfungsi:** Menambahkan logika dinamis pada atribut `required` di `feedback.js`. Saat mode "Request" aktif, field "Judul" wajib diisi. Saat mode "Report" aktif, field "Judul" tidak wajib diisi (karena memang disembunyikan), sehingga form tidak lagi *silent crash* saat disubmit.
+
+### Security
+- **Pencegahan Error Telegram:** Menambahkan fungsi `escapeTgHtml()` pada `functions/api/feedback.js` untuk meng-*escape* karakter khusus (`<`, `>`, `&`) dari input user. Ini mencegah pesan notifikasi Telegram gagal terkirim (400 Bad Request) jika user mengetik karakter yang dianggap *tag* HTML oleh API Telegram.
+
 ## 2026-10-31
 
 ### Added
