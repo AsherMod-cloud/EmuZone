@@ -1,3 +1,20 @@
+## 2026-11-12
+
+### Added
+- **Age Gate Modal (18+):** Menambahkan peringatan konten dewasa pada halaman detail game.
+  - Modal akan otomatis muncul jika game memiliki genre "Adult" atau "18+".
+  - Konten di belakang modal di-*blur* (diberikan efek blur) dan tidak bisa di-*scroll* sampai user memberikan konfirmasi.
+  - Terdapat dua pilihan: "Keluar" (kembali ke homepage) dan "Ya, Saya 18+" (membuka akses konten).
+  - Menggunakan `sessionStorage` untuk menyimpan status persetujuan, sehingga user tidak perlu mengonfirmasi ulang di setiap halaman game 18+ selama sesi browser yang sama.
+
+### Changed
+- **Update SEO Function (`functions/game.js`):** 
+  - Menambahkan injeksi `contentRating` (schema.org: `AdultContentConsidered`) pada JSON-LD `VideoGame` jika game terdeteksi memiliki genre 18+.
+  - *(Opsional)* Menambahkan prefix `[18+]` pada `<title>` dan meta description untuk game dewasa agar transparan di hasil pencarian Google.
+
+### Notes
+- **Rencana Selanjutnya:** Fitur *Multi-Genre* (memecah "Action Adventure" menjadi "Action" & "Adventure" menggunakan sistem Tag/Checkbox) ditunda ke pembaruan berikutnya. Untuk saat ini, Age Gate berjalan dengan mengecek kata kunci "18+" atau "Adult" pada *string* genre yang ada.
+
 ## 2026-11-11
 
 ### Added

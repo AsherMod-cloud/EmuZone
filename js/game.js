@@ -266,6 +266,37 @@ function render(game, id){
   const downloads = downloadRows(g);
   const hasEmulatorSection = g.emulator || g.emulatorDownload;
 
+    // 1. Cek apakah game mengandung genre Adult / 18+
+  // (Kalau belum array, pakai .includes() atau .toLowerCase())
+  const isAdult = String(game.genre || "").toLowerCase().includes("adult") || 
+                  String(game.genre || "").includes("18+");
+
+  // 2. Cek apakah user udah pernah konfirmasi di sesi ini
+  const hasConsented = sessionStorage.getItem("emuzone_adult_consent") === "true";
+
+  if (isAdult && !hasConsented) {
+    // Blur konten di belakang
+    root.style.filter = "blur(10px)";
+    root.style.pointerEvents = "none";
+    
+    // Tampilkan Modal
+    const overlay = document.getElementById("ageGateOverlay");
+    overlay.classList.add("open");
+
+    // Tombol Keluar -> Balik ke Homepage
+    document.getElementById("btnExitAdult").onclick = () => {
+      window.location.href = "/";
+    };
+
+    // Tombol Setuju -> Hilangkan blur & simpan sesi
+    document.getElementById("btnEnterAdult").onclick = () => {
+      sessionStorage.setItem("emuzone_adult_consent", "true");
+      overlay.classList.remove("open");
+      root.style.filter = "none";
+      root.style.pointerEvents = "auto";
+    };
+  }
+
   root.innerHTML = `
     ${g.banner ? `<div class="game-banner" style="background-image:url('${g.banner}')"></div>` : `<div class="game-banner game-banner-empty"></div>`}
 
