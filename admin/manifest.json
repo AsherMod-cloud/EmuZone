@@ -1,6 +1,6 @@
 {
-  "name": "EmuZone Admin",
-  "short_name": "EmuZone Admin",
+  "name": "Dashboard Admin • EmuZone",
+  "short_name": "Dashboard EmuZone",
   "start_url": "/admin/dashboard",
   "scope": "/admin/",
   "display": "standalone",
