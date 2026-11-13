@@ -206,27 +206,31 @@ function setupShotGallery(){
     openShotModal(idx);
   });
 
-  // Close button
-  document.getElementById("shotModalClose").addEventListener("click", closeShotModal);
-
-  // Overlay click → close (but not image or buttons)
-  document.getElementById("shotModalOverlay").addEventListener("click", (e) => {
+  // GANTI DARI .addEventListener KE .onclick
+  document.getElementById("shotModalClose").onclick = closeShotModal;
+  
+  document.getElementById("shotModalOverlay").onclick = (e) => {
     if(e.target === e.currentTarget) closeShotModal();
-  });
+  };
 
-  // Nav buttons
-  document.getElementById("shotPrev").addEventListener("click", () => navigateShot(-1));
-  document.getElementById("shotNext").addEventListener("click", () => navigateShot(1));
+  // INI YANG PALING PENTING
+  document.getElementById("shotPrev").onclick = () => navigateShot(-1);
+  document.getElementById("shotNext").onclick = () => navigateShot(1);
 
   // Keyboard navigation
-  document.addEventListener("keydown", (e) => {
-    const overlay = document.getElementById("shotModalOverlay");
-    if(!overlay.classList.contains("open")) return;
+  // Kita hapus dulu listener keydown yang lama biar gak numpuk
+  document.removeEventListener("keydown", handleShotKeyboard);
+  document.addEventListener("keydown", handleShotKeyboard);
+}
 
-    if(e.key === "Escape") closeShotModal();
-    if(e.key === "ArrowLeft") navigateShot(-1);
-    if(e.key === "ArrowRight") navigateShot(1);
-  });
+// Pindahkan logika keyboard ke fungsi terpisah biar rapi
+function handleShotKeyboard(e) {
+  const overlay = document.getElementById("shotModalOverlay");
+  if(!overlay.classList.contains("open")) return;
+
+  if(e.key === "Escape") closeShotModal();
+  if(e.key === "ArrowLeft") navigateShot(-1);
+  if(e.key === "ArrowRight") navigateShot(1);
 }
 
 function render(game, id){
