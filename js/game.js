@@ -206,19 +206,24 @@ function setupShotGallery(){
     openShotModal(idx);
   });
 
-  // GANTI DARI .addEventListener KE .onclick
   document.getElementById("shotModalClose").onclick = closeShotModal;
   
   document.getElementById("shotModalOverlay").onclick = (e) => {
     if(e.target === e.currentTarget) closeShotModal();
   };
 
-  // INI YANG PALING PENTING
-  document.getElementById("shotPrev").onclick = () => navigateShot(-1);
-  document.getElementById("shotNext").onclick = () => navigateShot(1);
+  // TAMBAHKAN e.stopPropagation() DI SINI
+  document.getElementById("shotPrev").onclick = (e) => {
+    e.stopPropagation();
+    navigateShot(-1);
+  };
+  
+  document.getElementById("shotNext").onclick = (e) => {
+    e.stopPropagation();
+    navigateShot(1);
+  };
 
   // Keyboard navigation
-  // Kita hapus dulu listener keydown yang lama biar gak numpuk
   document.removeEventListener("keydown", handleShotKeyboard);
   document.addEventListener("keydown", handleShotKeyboard);
 }
